@@ -1,0 +1,16 @@
+Options -Indexes
+
+# Protect config directory
+<FilesMatch "^(config|database)">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+# Protect uploads from direct access (served via PHP proxy)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^uploads/receipts/ - [F,L]
+</IfModule>
+
+# PHP error handling
+php_flag display_errors off

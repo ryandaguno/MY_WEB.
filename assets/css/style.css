@@ -1,0 +1,317 @@
+/* =============================================
+   Selah Aesthetics — Custom Bootstrap Theme
+   Primary: Deep Purple #6B2D8B
+   Accent:  Teal       #0D9488
+   ============================================= */
+
+:root {
+  --sa-purple:      #6B2D8B;
+  --sa-purple-dark: #4a1f62;
+  --sa-teal:        #0D9488;
+  --sa-teal-dark:   #0a7a70;
+  --sa-light:       #f8f4fb;
+  --sa-white:       #ffffff;
+  --sa-text:        #2d2d2d;
+  --sa-muted:       #6c757d;
+  --sa-border:      #e0d5ea;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--sa-light);
+  color: var(--sa-text);
+}
+
+/* ---- Navbar ---- */
+.navbar-sa {
+  background-color: var(--sa-purple);
+}
+.navbar-sa .navbar-brand,
+.navbar-sa .nav-link {
+  color: var(--sa-white) !important;
+}
+.navbar-sa .nav-link:hover {
+  color: #d4b8e8 !important;
+}
+
+/* ---- Buttons ---- */
+.btn-sa-primary {
+  background-color: var(--sa-purple);
+  border-color: var(--sa-purple);
+  color: var(--sa-white);
+}
+.btn-sa-primary:hover {
+  background-color: var(--sa-purple-dark);
+  border-color: var(--sa-purple-dark);
+  color: var(--sa-white);
+}
+.btn-sa-teal {
+  background-color: var(--sa-teal);
+  border-color: var(--sa-teal);
+  color: var(--sa-white);
+}
+.btn-sa-teal:hover {
+  background-color: var(--sa-teal-dark);
+  border-color: var(--sa-teal-dark);
+  color: var(--sa-white);
+}
+
+/* ---- Cards ---- */
+.card-sa {
+  border: 1px solid var(--sa-border);
+  border-radius: 12px;
+  transition: box-shadow 0.2s;
+}
+.card-sa:hover {
+  box-shadow: 0 4px 16px rgba(107, 45, 139, 0.15);
+}
+.card-sa .card-header {
+  background-color: var(--sa-purple);
+  color: var(--sa-white);
+  border-radius: 12px 12px 0 0;
+  font-weight: 600;
+}
+
+/* ---- Hero Section ---- */
+.hero-section {
+  background: linear-gradient(135deg, var(--sa-purple) 0%, var(--sa-teal) 100%);
+  color: var(--sa-white);
+  padding: 80px 20px;
+  text-align: center;
+  border-radius: 0 0 20px 20px;
+}
+.hero-section h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* ---- Service Cards ---- */
+.service-card {
+  cursor: pointer;
+  border: 2px solid var(--sa-border);
+  border-radius: 10px;
+  padding: 16px;
+  transition: all 0.2s;
+  background: var(--sa-white);
+}
+.service-card:hover {
+  border-color: var(--sa-purple);
+}
+.service-card.selected {
+  border-color: var(--sa-purple);
+  background-color: #f3e8fb;
+}
+.service-card .service-name {
+  font-weight: 600;
+  color: var(--sa-purple);
+}
+.service-card .service-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--sa-teal);
+}
+
+/* ---- Stylist Cards ---- */
+.stylist-card {
+  cursor: pointer;
+  border: 2px solid var(--sa-border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s;
+  background: var(--sa-white);
+}
+.stylist-card:hover,
+.stylist-card.selected {
+  border-color: var(--sa-purple);
+  background-color: #f3e8fb;
+}
+.stylist-card .badge-available {
+  background-color: var(--sa-teal);
+  color: white;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.stylist-card .badge-unavailable {
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ---- Time Slot Buttons ---- */
+.slot-btn {
+  border: 2px solid var(--sa-border);
+  background: var(--sa-white);
+  color: var(--sa-text);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.slot-btn:hover:not(:disabled) {
+  border-color: var(--sa-teal);
+  background-color: #e6faf9;
+}
+.slot-btn.selected {
+  background-color: var(--sa-teal);
+  border-color: var(--sa-teal);
+  color: white;
+}
+.slot-btn:disabled {
+  background-color: #2d2d2d;
+  border-color: #2d2d2d;
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ---- Booking Steps Progress ---- */
+.booking-steps {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  gap: 8px;
+}
+.step-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: var(--sa-border);
+  color: var(--sa-muted);
+}
+.step-indicator.active {
+  background: var(--sa-purple);
+  color: white;
+}
+.step-indicator.done {
+  background: var(--sa-teal);
+  color: white;
+}
+
+/* ---- Admin Sidebar ---- */
+.admin-sidebar {
+  background-color: #1a1a2e;
+  min-height: 100vh;
+  padding-top: 20px;
+}
+.admin-sidebar .nav-link {
+  color: #c0c0d0;
+  padding: 10px 20px;
+  border-radius: 6px;
+  margin: 2px 8px;
+}
+.admin-sidebar .nav-link:hover,
+.admin-sidebar .nav-link.active {
+  background-color: var(--sa-purple);
+  color: white;
+}
+.admin-sidebar .sidebar-brand {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 10px 20px 20px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 10px;
+}
+
+/* ---- Stat Cards (Admin Dashboard) ---- */
+.stat-card {
+  border-radius: 12px;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+.stat-card.pending  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.stat-card.accepted { background: linear-gradient(135deg, #10b981, #059669); }
+.stat-card.cancelled{ background: linear-gradient(135deg, #ef4444, #dc2626); }
+.stat-card.completed{ background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.stat-card h2 { font-size: 2.5rem; font-weight: 700; margin: 0; }
+.stat-card p  { margin: 0; font-size: 0.9rem; opacity: 0.9; }
+
+/* ---- Star Rating ---- */
+.star-rating input[type="radio"] { display: none; }
+.star-rating label {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: #f59e0b;
+}
+
+/* ---- Alerts ---- */
+.alert-sa {
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* ---- Tables ---- */
+.table-sa thead {
+  background-color: var(--sa-purple);
+  color: white;
+}
+
+/* ---- Status Badges ---- */
+.badge-pending   { background-color: #f59e0b; color: white; }
+.badge-accepted  { background-color: #10b981; color: white; }
+.badge-cancelled { background-color: #ef4444; color: white; }
+.badge-completed { background-color: #3b82f6; color: white; }
+
+/* ---- Login / Auth Pages ---- */
+.auth-card {
+  max-width: 440px;
+  margin: 60px auto;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(107, 45, 139, 0.15);
+}
+.auth-card .card-header {
+  background: linear-gradient(135deg, var(--sa-purple), var(--sa-teal));
+  color: white;
+  border-radius: 16px 16px 0 0;
+  text-align: center;
+  padding: 24px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* ---- Admin Login (dark) ---- */
+.admin-login-page {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-login-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 40px;
+  width: 380px;
+  color: white;
+}
+.admin-login-card input {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+}
+.admin-login-card input::placeholder { color: rgba(255,255,255,0.5); }
+.admin-login-card input:focus {
+  background: rgba(255,255,255,0.15);
+  border-color: var(--sa-teal);
+  color: white;
+  box-shadow: none;
+}
