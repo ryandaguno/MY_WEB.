@@ -18,25 +18,39 @@ class NotificationService {
     // SEND helpers
     // ----------------------------------------------------------------
     private function send(string $to, string $subject, string $body, ?int $bookingId, string $type): void {
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host       = MAIL_HOST;
-            $mail->SMTPAuth   = true;
-            $mail->Username   = MAIL_USERNAME;
-            $mail->Password   = MAIL_PASSWORD;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = MAIL_PORT;
-            $mail->Timeout    = 15;
-            $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-            $mail->addAddress($to);
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body    = $body;
-            $mail->send();
+        // Use Brevo HTTP API (SMTP is blocked on Railway)
+        $apiKey = getenv('BREVO_API_KEY') ?: MAIL_PASSWORD;
+
+        $payload = json_encode([
+            'sender'     => ['name' => MAIL_FROM_NAME, 'email' => MAIL_FROM],
+            'to'         => [['email' => $to]],
+            'subject'    => $subject,
+            'htmlContent'=> $body,
+        ]);
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => [
+                'api-key: ' . $apiKey,
+                'Content-Type: application/json',
+                'Accept: application/json',
+            ],
+            CURLOPT_TIMEOUT => 15,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($httpCode === 201) {
             $this->log($bookingId, $type, $to, 'sent', null);
-        } catch (Exception $e) {
-            $this->log($bookingId, $type, $to, 'failed', $mail->ErrorInfo);
+        } else {
+            $error = $curlError ?: ('HTTP ' . $httpCode . ': ' . $response);
+            $this->log($bookingId, $type, $to, 'failed', $error);
         }
     }
 
