@@ -1,10 +1,14 @@
 {
 	frankenphp
-	order php_server before file_server
 }
 
-:{$PORT:80} {
+:{$PORT:8080} {
 	root * /app
 	encode gzip
+
+	# Block sensitive directories
+	@blocked path /config/* /database/* /modules/* /vendor/*
+	respond @blocked 403
+
 	php_server
 }
