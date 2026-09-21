@@ -11,11 +11,12 @@ nixPkgs = [
   "php82Extensions.session",
   "php82Extensions.tokenizer",
   "php82Extensions.gd",
-  "php82Extensions.zip"
+  "php82Extensions.zip",
+  "php82Packages.composer"
 ]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
 
 [phases.build]
 cmds = ["mkdir -p uploads/receipts && chmod -R 777 uploads"]
