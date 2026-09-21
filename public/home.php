@@ -755,16 +755,162 @@ try {
        RESPONSIVE
        ============================================= */
     @media (max-width: 768px) {
-      .sa-navbar { padding: 14px 18px; }
+      /* ---- Navbar ---- */
+      .sa-navbar {
+        padding: 12px 16px;
+      }
       .sa-nav-links { display: none !important; }
-      .hero-title { font-size: clamp(1.5rem, 6vw, 2.4rem); }
-      .btn-hero-black { padding: 12px 24px; font-size: .82rem; }
-      .sa-logo { width: 60px; height: 60px; }
-      .sa-logo .logo-symbol { font-size: 1.1rem; }
-      .service-grid { padding: 0 16px; }
-      .contact-grid { padding: 0 16px; }
+
+      /* Logo: shrink a bit */
+      .sa-logo { width: 54px; height: 54px; }
+      .sa-logo .logo-symbol { font-size: 1.05rem; }
+      .sa-logo .logo-text   { font-size: .5rem; }
+
+      /* ---- Hero content ---- */
+      .hero-title {
+        font-size: clamp(1.45rem, 5.5vw, 2.2rem);
+        letter-spacing: 1px;
+        margin-bottom: 28px;
+      }
+      .hero-content {
+        padding: 0 18px 50px;
+      }
+      .hero-subtitle {
+        font-size: .78rem;
+        letter-spacing: 2px;
+      }
+      .hero-badge {
+        font-size: .65rem;
+        padding: 5px 14px;
+      }
+      .btn-hero-black {
+        padding: 13px 22px;
+        font-size: .82rem;
+        width: 100%;
+        text-align: center;
+      }
+      .hero-buttons {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 320px;
+      }
+
+      /* ---- Sections ---- */
+      .service-grid  { padding: 0 16px; }
+      .contact-grid  { padding: 0 16px; }
+
+      /* ---- Footer ---- */
+      .sa-footer { padding: 40px 20px 28px; }
       .sa-footer-inner { grid-template-columns: 1fr; gap: 28px; }
       .sa-footer-bottom { flex-direction: column; text-align: center; }
+    }
+
+    /* Extra-small phones (≤ 380px) */
+    @media (max-width: 380px) {
+      .hero-title { font-size: clamp(1.3rem, 5vw, 1.9rem); }
+    }
+
+    /* =============================================
+       MOBILE HAMBURGER BUTTON
+       ============================================= */
+    .mobile-menu-btn {
+      background: rgba(255,255,255,.15);
+      border: 1.5px solid rgba(255,255,255,.6);
+      border-radius: 8px;
+      color: white;
+      font-size: 1.6rem;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background .2s;
+      padding: 0;
+      line-height: 1;
+    }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,.28); }
+
+    /* =============================================
+       MOBILE SLIDE-DOWN DRAWER
+       ============================================= */
+    .mobile-nav-drawer {
+      position: relative;
+      z-index: 9;
+      background: rgba(15, 5, 30, 0.97);
+      backdrop-filter: blur(12px);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease, padding .35s ease;
+    }
+    .mobile-nav-drawer.open {
+      max-height: 500px;
+      padding: 16px 0 20px;
+    }
+
+    .mobile-nav-links {
+      list-style: none;
+      margin: 0;
+      padding: 0 20px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .mobile-nav-links li a {
+      display: block;
+      color: rgba(255,255,255,.85);
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 4px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: color .2s;
+    }
+    .mobile-nav-links li:last-child a { border-bottom: none; }
+    .mobile-nav-links li a:hover { color: #d4b8e8; }
+
+    .mobile-nav-actions {
+      padding: 14px 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mobile-nav-btn {
+      display: block;
+      width: 100%;
+      padding: 13px 18px;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: opacity .2s, transform .15s;
+    }
+    .mobile-nav-btn:hover { opacity: .88; transform: translateY(-1px); }
+
+    .mobile-nav-btn-solid {
+      background: white;
+      color: #5a1a8a;
+    }
+    .mobile-nav-btn-outline {
+      background: transparent;
+      color: white;
+      border: 1.5px solid rgba(255,255,255,.7);
+    }
+    .mobile-nav-btn-ghost {
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.75);
+    }
+    .mobile-nav-btn-danger {
+      background: rgba(220,38,38,.2);
+      color: #fca5a5;
+      border: 1px solid rgba(220,38,38,.4);
     }
   </style>
 </head>
@@ -804,13 +950,16 @@ $errorMsg   = SessionGuard::getFlash('error');
       <span class="logo-text">Selah</span>
     </a>
 
+    <!-- Desktop nav links -->
     <ul class="sa-nav-links d-none d-lg-flex">
       <li><a href="<?= BASE_URL ?>/public/home.php" class="active">Home</a></li>
       <li><a href="#services">Services</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
-    <div class="d-flex align-items-center gap-3">
+
+    <!-- Desktop right buttons (hidden on mobile) -->
+    <div class="d-none d-lg-flex align-items-center gap-3">
       <?php if ($isLoggedIn): ?>
         <a href="<?= BASE_URL ?>/public/my_bookings.php" class="btn-mybookings">
           <i class="bi bi-calendar2-check-fill"></i>
@@ -842,7 +991,42 @@ $errorMsg   = SessionGuard::getFlash('error');
         <button class="btn-login-nav" data-bs-toggle="modal" data-bs-target="#loginModal">LOG IN</button>
       <?php endif; ?>
     </div>
+
+    <!-- Mobile hamburger (visible only on mobile) -->
+    <button class="mobile-menu-btn d-lg-none" id="mobileMenuBtn" aria-label="Open menu">
+      <i class="bi bi-list"></i>
+    </button>
   </nav>
+
+  <!-- Mobile slide-down menu -->
+  <div class="mobile-nav-drawer" id="mobileNavDrawer">
+    <ul class="mobile-nav-links">
+      <li><a href="<?= BASE_URL ?>/public/home.php"><i class="bi bi-house me-2"></i>Home</a></li>
+      <li><a href="#services"><i class="bi bi-scissors me-2"></i>Services</a></li>
+      <li><a href="#about"><i class="bi bi-info-circle me-2"></i>About</a></li>
+      <li><a href="#contact"><i class="bi bi-telephone me-2"></i>Contact</a></li>
+    </ul>
+    <div class="mobile-nav-actions">
+      <?php if ($isLoggedIn): ?>
+        <a href="<?= BASE_URL ?>/public/my_bookings.php" class="mobile-nav-btn mobile-nav-btn-outline">
+          <i class="bi bi-calendar2-check-fill me-2"></i>My Bookings
+        </a>
+        <a href="<?= BASE_URL ?>/public/auth/logout.php" class="mobile-nav-btn mobile-nav-btn-danger">
+          <i class="bi bi-box-arrow-right me-2"></i>Logout (<?= $currentUser ?>)
+        </a>
+      <?php else: ?>
+        <button class="mobile-nav-btn mobile-nav-btn-outline" data-bs-toggle="modal" data-bs-target="#registerModal">
+          <i class="bi bi-person-plus me-2"></i>Register
+        </button>
+        <button class="mobile-nav-btn mobile-nav-btn-solid" data-bs-toggle="modal" data-bs-target="#loginModal">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Log In
+        </button>
+        <a href="<?= BASE_URL ?>/public/my_bookings.php" class="mobile-nav-btn mobile-nav-btn-ghost">
+          <i class="bi bi-calendar2-check-fill me-2"></i>My Bookings
+        </a>
+      <?php endif; ?>
+    </div>
+  </div>
 
   <div class="hero-content">
 
@@ -1240,6 +1424,26 @@ $errorMsg   = SessionGuard::getFlash('error');
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ── Mobile hamburger menu ──
+(function () {
+  var btn    = document.getElementById('mobileMenuBtn');
+  var drawer = document.getElementById('mobileNavDrawer');
+  if (!btn || !drawer) return;
+
+  btn.addEventListener('click', function () {
+    var isOpen = drawer.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen);
+    btn.querySelector('i').className = isOpen ? 'bi bi-x-lg' : 'bi bi-list';
+  });
+
+  // Close drawer when any link inside it is clicked
+  drawer.querySelectorAll('a, button').forEach(function (el) {
+    el.addEventListener('click', function () {
+      drawer.classList.remove('open');
+      btn.querySelector('i').className = 'bi bi-list';
+    });
+  });
+})();
 // Auto-dismiss flash messages after 4s
 setTimeout(() => {
   document.querySelectorAll('.flash-container .alert').forEach(a => {
