@@ -1495,79 +1495,87 @@ function checkPwStrength(val) {
 }
 
 // ── Register form: AJAX submit ──
-document.getElementById('registerModalForm')?.addEventListener('submit', async function(e) {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+  var form = document.getElementById('registerModalForm');
+  if (!form) return;
 
-  // Clear previous errors
-  ['username','email','country','phone','password'].forEach(function(field) {
-    var errEl  = document.getElementById('err_' + field);
-    var inpEl  = document.getElementById('reg_' + field) || document.getElementById('regPassword');
-    if (errEl)  errEl.textContent = '';
-    if (inpEl)  inpEl.classList.remove('reg-error');
-  });
-  document.getElementById('err_terms').textContent = '';
-  document.getElementById('regGeneralError').style.display = 'none';
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-  // Client-side checks
-  var pw    = document.getElementById('regPassword').value;
-  var terms = document.getElementById('regTerms').checked;
-
-  if (pw.length < 8) {
-    document.getElementById('err_password').textContent = 'Password must be at least 8 characters.';
-    document.getElementById('regPassword').classList.add('reg-error');
-    document.getElementById('pwStrengthText').textContent = '⚠ Password must be at least 8 characters!';
-    document.getElementById('pwStrengthText').style.color = '#f87171';
-    return;
-  }
-  if (!terms) {
-    document.getElementById('err_terms').textContent = 'You must agree to the Terms & Conditions.';
-    return;
-  }
-
-  // Disable button while submitting
-  var btn = document.getElementById('regSubmitBtn');
-  btn.disabled    = true;
-  btn.textContent = 'Creating Account...';
-  btn.style.opacity = '.7';
-
-  try {
-    var formData = new FormData(this);
-    var resp = await fetch('<?= BASE_URL ?>/public/auth/register_process.php', {
-      method: 'POST',
-      body:   formData
+    // Clear previous errors
+    ['username','email','country','phone','password'].forEach(function(field) {
+      var errEl = document.getElementById('err_' + field);
+      var inpEl = document.getElementById('reg_' + field) || (field === 'password' ? document.getElementById('regPassword') : null);
+      if (errEl) errEl.textContent = '';
+      if (inpEl) inpEl.classList.remove('reg-error');
     });
-    var data = await resp.json();
+    document.getElementById('err_terms').textContent = '';
+    document.getElementById('regGeneralError').style.display = 'none';
 
-    if (data.success) {
-      // Close register modal, open success popup
-      bootstrap.Modal.getInstance(document.getElementById('registerModal'))?.hide();
-      setTimeout(function() {
-        new bootstrap.Modal(document.getElementById('regSuccessModal')).show();
-      }, 350);
-    } else if (data.errors && Object.keys(data.errors).length > 0) {
-      // Show inline field errors
-      Object.entries(data.errors).forEach(function([field, msg]) {
-        var errEl = document.getElementById('err_' + field);
-        var inpEl = document.getElementById('reg_' + field) || (field === 'password' ? document.getElementById('regPassword') : null);
-        if (errEl) errEl.textContent = msg;
-        if (inpEl) inpEl.classList.add('reg-error');
+    // Client-side checks
+    var pw    = document.getElementById('regPassword').value;
+    var terms = document.getElementById('regTerms').checked;
+
+    if (pw.length < 8) {
+      document.getElementById('err_password').textContent = 'Password must be at least 8 characters.';
+      document.getElementById('regPassword').classList.add('reg-error');
+      document.getElementById('pwStrengthText').textContent = '⚠ Password must be at least 8 characters!';
+      document.getElementById('pwStrengthText').style.color = '#f87171';
+      return;
+    }
+    if (!terms) {
+      document.getElementById('err_terms').textContent = 'You must agree to the Terms & Conditions.';
+      return;
+    }
+
+    // Disable button while submitting
+    var btn = document.getElementById('regSubmitBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Creating Account...';
+    btn.style.opacity = '.7';
+
+    try {
+      var formData = new FormData(form);
+      var resp = await fetch('<?= BASE_URL ?>/public/auth/register_process.php', {
+        method: 'POST',
+        body:   formData
       });
-    } else {
-      // General server error
+
+      var text = await resp.text();
+      var data;
+      try {
+        data = JSON.parse(text);
+      } catch(parseErr) {
+        throw new Error('Server returned unexpected response: ' + text.substring(0, 100));
+      }
+
+      if (data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('registerModal'))?.hide();
+        setTimeout(function() {
+          new bootstrap.Modal(document.getElementById('regSuccessModal')).show();
+        }, 350);
+      } else if (data.errors && Object.keys(data.errors).length > 0) {
+        Object.entries(data.errors).forEach(function([field, msg]) {
+          var errEl = document.getElementById('err_' + field);
+          var inpEl = document.getElementById('reg_' + field) || (field === 'password' ? document.getElementById('regPassword') : null);
+          if (errEl) errEl.textContent = msg;
+          if (inpEl) inpEl.classList.add('reg-error');
+        });
+      } else {
+        var genErr = document.getElementById('regGeneralError');
+        genErr.textContent = data.message || 'Something went wrong. Please try again.';
+        genErr.style.display = 'block';
+      }
+    } catch (err) {
       var genErr = document.getElementById('regGeneralError');
-      genErr.textContent = data.message || 'Something went wrong. Please try again.';
+      genErr.textContent = 'Network error. Please check your connection and try again.';
       genErr.style.display = 'block';
     }
-  } catch (err) {
-    var genErr = document.getElementById('regGeneralError');
-    genErr.textContent = 'Network error. Please check your connection and try again.';
-    genErr.style.display = 'block';
-  }
 
-  // Re-enable button
-  btn.disabled    = false;
-  btn.textContent = 'CREATE ACCOUNT';
-  btn.style.opacity = '1';
+    btn.disabled    = false;
+    btn.textContent = 'CREATE ACCOUNT';
+    btn.style.opacity = '1';
+  });
 });
 
 function viewServiceImg(src, name) {
@@ -1641,7 +1649,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div id="regGeneralError" style="display:none;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);
              border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#fca5a5;font-size:.82rem;text-align:center"></div>
 
-        <form id="registerModalForm" novalidate>
+        <form id="registerModalForm" method="post" action="<?= BASE_URL ?>/public/auth/register_process.php" novalidate>
           <input type="hidden" name="csrf_token" value="<?= SessionGuard::generateCsrfToken() ?>">
 
           <div class="mb-3">
