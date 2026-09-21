@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../modules/SessionGuard.php';
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/countries.php';
 SessionGuard::start();
 
 $isLoggedIn  = SessionGuard::isClientLoggedIn();
@@ -1659,8 +1660,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
           <div class="mb-3">
             <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Country</label>
-            <input type="text" name="country" id="reg_country" class="reg-input form-control"
-                   maxlength="100" required autocomplete="country-name" value="<?= $regCountry ?>">
+            <select name="country" id="reg_country" class="reg-input form-control" required>
+              <option value="">— Select your country —</option>
+              <?php foreach (getCountryList() as $c): ?>
+              <option value="<?= htmlspecialchars($c) ?>"
+                <?= ($regCountry === $c || ($regCountry === '' && $c === 'Philippines')) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($c) ?>
+              </option>
+              <?php endforeach; ?>
+            </select>
             <span class="reg-field-error" id="err_country"></span>
           </div>
 
@@ -1796,6 +1804,21 @@ document.addEventListener('DOMContentLoaded', function () {
   font-size: .75rem;
   margin-top: 4px;
   min-height: 1em;
+}
+/* Style the country select to match other reg-inputs */
+select.reg-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.7)' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 4px center !important;
+  background-size: 12px !important;
+  padding-right: 24px !important;
+  cursor: pointer;
+}
+select.reg-input option {
+  background: #5a2080;
+  color: white;
 }
 </style>
 

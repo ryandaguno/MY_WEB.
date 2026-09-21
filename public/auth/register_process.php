@@ -1,10 +1,13 @@
 <?php
+ob_start(); // buffer any stray output so it doesn't corrupt JSON
+
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../modules/SessionGuard.php';
 require_once __DIR__ . '/../../modules/Auth.php';
 SessionGuard::start();
 
-header('Content-Type: application/json');
+ob_clean(); // discard anything buffered before our response
+header('Content-Type: application/json; charset=utf-8');
 
 if (SessionGuard::isClientLoggedIn()) {
     echo json_encode(['success' => false, 'errors' => [], 'message' => 'Already logged in.']);
