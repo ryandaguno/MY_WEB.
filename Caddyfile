@@ -1,27 +1,9 @@
 {
 	frankenphp
-	order php_server before file_server
 }
 
-:80 {
+:{$PORT:80} {
 	root * /app
 	encode gzip
-
-	# Serve static files directly
-	@static {
-		file
-		path *.css *.js *.jpg *.jpeg *.png *.gif *.ico *.svg *.woff *.woff2 *.ttf
-	}
-	handle @static {
-		file_server
-	}
-
-	# Block direct access to sensitive directories
-	@blocked {
-		path /config/* /database/* /modules/* /vendor/* /uploads/receipts/*
-	}
-	respond @blocked 403
-
-	# PHP handling
 	php_server
 }
