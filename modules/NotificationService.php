@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class NotificationService {
 
@@ -14,89 +18,25 @@ class NotificationService {
     // SEND helpers
     // ----------------------------------------------------------------
     private function send(string $to, string $subject, string $body, ?int $bookingId, string $type): void {
-        // Try Resend API first, fallback to Gmail SMTP
-        $apiKey = getenv('RESEND_API_KEY') ?: '';
-
-        if (!empty($apiKey)) {
-            $payload = json_encode([
-                'from'    => MAIL_FROM_NAME . ' <onboarding@resend.dev>',
-                'to'      => [$to],
-                'subject' => $subject,
-                'html'    => $body,
-            ]);
-
-            $ch = curl_init('https://api.resend.com/emails');
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST           => true,
-                CURLOPT_POSTFIELDS     => $payload,
-                CURLOPT_HTTPHEADER     => [
-                    'Authorization: Bearer ' . $apiKey,
-                    'Content-Type: application/json',
-                ],
-                CURLOPT_TIMEOUT => 15,
-            ]);
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($httpCode === 200 || $httpCode === 201) {
-                $this->log($bookingId, $type, $to, 'sent', null);
-                return;
-            }
-        }
-
-        // Fallback: Gmail SMTP via port 465 (SSL)
-        $context = stream_context_create([
-            'ssl' => [
-                'verify_peer'       => false,
-                'verify_peer_name'  => false,
-            ]
-        ]);
-
+        $mail = new PHPMailer(true);
         try {
-            $socket = stream_socket_client(
-                'ssl://smtp.gmail.com:465',
-                $errno, $errstr, 15,
-                STREAM_CLIENT_CONNECT, $context
-            );
-
-            if (!$socket) {
-                throw new \Exception("Cannot connect: $errstr");
-            }
-
-            $read = fgets($socket, 1024);
-
-            $commands = [
-                "EHLO railway\r\n",
-                "AUTH LOGIN\r\n",
-                base64_encode(MAIL_USERNAME) . "\r\n",
-                base64_encode(MAIL_PASSWORD) . "\r\n",
-                "MAIL FROM:<" . MAIL_FROM . ">\r\n",
-                "RCPT TO:<$to>\r\n",
-                "DATA\r\n",
-            ];
-
-            foreach ($commands as $cmd) {
-                fwrite($socket, $cmd);
-                fgets($socket, 1024);
-            }
-
-            $headers  = "MIME-Version: 1.0\r\n";
-            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-            $headers .= "From: " . MAIL_FROM_NAME . " <" . MAIL_FROM . ">\r\n";
-            $headers .= "To: $to\r\n";
-            $headers .= "Subject: $subject\r\n";
-
-            fwrite($socket, $headers . "\r\n" . $body . "\r\n.\r\n");
-            fgets($socket, 1024);
-            fwrite($socket, "QUIT\r\n");
-            fclose($socket);
-
+            $mail->isSMTP();
+            $mail->Host       = MAIL_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = MAIL_USERNAME;
+            $mail->Password   = MAIL_PASSWORD;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = MAIL_PORT;
+            $mail->Timeout    = 15;
+            $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+            $mail->addAddress($to);
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
+            $mail->send();
             $this->log($bookingId, $type, $to, 'sent', null);
-
-        } catch (\Exception $e) {
-            $this->log($bookingId, $type, $to, 'failed', $e->getMessage());
+        } catch (Exception $e) {
+            $this->log($bookingId, $type, $to, 'failed', $mail->ErrorInfo);
         }
     }
 
