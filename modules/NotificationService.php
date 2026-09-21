@@ -1,10 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 class NotificationService {
 
@@ -18,25 +14,42 @@ class NotificationService {
     // SEND helpers
     // ----------------------------------------------------------------
     private function send(string $to, string $subject, string $body, ?int $bookingId, string $type): void {
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host       = MAIL_HOST;
-            $mail->SMTPAuth   = true;
-            $mail->Username   = MAIL_USERNAME;
-            $mail->Password   = MAIL_PASSWORD;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = MAIL_PORT;
-            $mail->Timeout    = 10; // 10 second timeout
-            $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-            $mail->addAddress($to);
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body    = $body;
-            $mail->send();
+        $apiKey = getenv('RESEND_API_KEY') ?: '';
+
+        if (empty($apiKey)) {
+            $this->log($bookingId, $type, $to, 'failed', 'RESEND_API_KEY not set');
+            return;
+        }
+
+        $payload = json_encode([
+            'from'    => MAIL_FROM_NAME . ' <onboarding@resend.dev>',
+            'to'      => [$to],
+            'subject' => $subject,
+            'html'    => $body,
+        ]);
+
+        $ch = curl_init('https://api.resend.com/emails');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . $apiKey,
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT        => 15,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($httpCode === 200 || $httpCode === 201) {
             $this->log($bookingId, $type, $to, 'sent', null);
-        } catch (Exception $e) {
-            $this->log($bookingId, $type, $to, 'failed', $mail->ErrorInfo);
+        } else {
+            $error = $curlError ?: ('HTTP ' . $httpCode . ': ' . $response);
+            $this->log($bookingId, $type, $to, 'failed', $error);
         }
     }
 
