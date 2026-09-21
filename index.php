@@ -8,6 +8,7 @@ if (SessionGuard::isAdminLoggedIn()) {
 } elseif (SessionGuard::isClientLoggedIn()) {
     header('Location: ' . BASE_URL . '/public/home.php');
 } else {
-    header('Location: ' . BASE_URL . '/public/auth/login.php');
+    // Show landing page first before login
+    header('Location: ' . BASE_URL . '/public/home.php');
 }
 exit;
