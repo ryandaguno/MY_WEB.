@@ -1,24 +1,20 @@
 FROM dunglas/frankenphp:latest-php8.3
 
-# Install system dependencies and PHP extensions including pdo_mysql
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libcurl4-openssl-dev \
     libonig-dev \
     libzip-dev \
+    default-mysql-client \
     zip \
     unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
         mysqli \
-        gd \
         mbstring \
-        curl \
-        fileinfo \
         zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
