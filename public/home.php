@@ -1493,21 +1493,80 @@ function checkPwStrength(val) {
   text.style.color     = len === 0 ? 'rgba(255,255,255,.6)' : lvl.bg;
 }
 
-// Disable Create Account button after submit to prevent double-submit
-document.getElementById('registerModalForm')?.addEventListener('submit', function(e) {
-  const pw = document.getElementById('regPassword').value;
+// ── Register form: AJAX submit ──
+document.getElementById('registerModalForm')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  // Clear previous errors
+  ['username','email','country','phone','password'].forEach(function(field) {
+    var errEl  = document.getElementById('err_' + field);
+    var inpEl  = document.getElementById('reg_' + field) || document.getElementById('regPassword');
+    if (errEl)  errEl.textContent = '';
+    if (inpEl)  inpEl.classList.remove('reg-error');
+  });
+  document.getElementById('err_terms').textContent = '';
+  document.getElementById('regGeneralError').style.display = 'none';
+
+  // Client-side checks
+  var pw    = document.getElementById('regPassword').value;
+  var terms = document.getElementById('regTerms').checked;
+
   if (pw.length < 8) {
-    e.preventDefault();
+    document.getElementById('err_password').textContent = 'Password must be at least 8 characters.';
+    document.getElementById('regPassword').classList.add('reg-error');
     document.getElementById('pwStrengthText').textContent = '⚠ Password must be at least 8 characters!';
-    document.getElementById('pwStrengthText').style.color = '#ef4444';
-    document.getElementById('pwStrengthBar').style.width = '25%';
-    document.getElementById('pwStrengthBar').style.background = '#ef4444';
+    document.getElementById('pwStrengthText').style.color = '#f87171';
     return;
   }
-  const btn = document.getElementById('regSubmitBtn');
-  btn.disabled = true;
+  if (!terms) {
+    document.getElementById('err_terms').textContent = 'You must agree to the Terms & Conditions.';
+    return;
+  }
+
+  // Disable button while submitting
+  var btn = document.getElementById('regSubmitBtn');
+  btn.disabled    = true;
   btn.textContent = 'Creating Account...';
   btn.style.opacity = '.7';
+
+  try {
+    var formData = new FormData(this);
+    var resp = await fetch('<?= BASE_URL ?>/public/auth/register_process.php', {
+      method: 'POST',
+      body:   formData
+    });
+    var data = await resp.json();
+
+    if (data.success) {
+      // Close register modal, open success popup
+      bootstrap.Modal.getInstance(document.getElementById('registerModal'))?.hide();
+      setTimeout(function() {
+        new bootstrap.Modal(document.getElementById('regSuccessModal')).show();
+      }, 350);
+    } else if (data.errors && Object.keys(data.errors).length > 0) {
+      // Show inline field errors
+      Object.entries(data.errors).forEach(function([field, msg]) {
+        var errEl = document.getElementById('err_' + field);
+        var inpEl = document.getElementById('reg_' + field) || (field === 'password' ? document.getElementById('regPassword') : null);
+        if (errEl) errEl.textContent = msg;
+        if (inpEl) inpEl.classList.add('reg-error');
+      });
+    } else {
+      // General server error
+      var genErr = document.getElementById('regGeneralError');
+      genErr.textContent = data.message || 'Something went wrong. Please try again.';
+      genErr.style.display = 'block';
+    }
+  } catch (err) {
+    var genErr = document.getElementById('regGeneralError');
+    genErr.textContent = 'Network error. Please check your connection and try again.';
+    genErr.style.display = 'block';
+  }
+
+  // Re-enable button
+  btn.disabled    = false;
+  btn.textContent = 'CREATE ACCOUNT';
+  btn.style.opacity = '1';
 });
 
 function viewServiceImg(src, name) {
@@ -1577,28 +1636,41 @@ document.addEventListener('DOMContentLoaded', function () {
         </h5>
       </div>
       <div style="background:linear-gradient(160deg,#7B3FC0 0%,#0D9488 100%);padding:20px 36px 28px">
-        <form id="registerModalForm" method="post" action="<?= BASE_URL ?>/public/auth/register_process.php" novalidate>
+        <!-- General error banner -->
+        <div id="regGeneralError" style="display:none;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);
+             border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#fca5a5;font-size:.82rem;text-align:center"></div>
+
+        <form id="registerModalForm" novalidate>
           <input type="hidden" name="csrf_token" value="<?= SessionGuard::generateCsrfToken() ?>">
+
           <div class="mb-3">
             <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Name</label>
-            <input type="text" name="username" class="reg-input form-control"
+            <input type="text" name="username" id="reg_username" class="reg-input form-control"
                    maxlength="50" required autocomplete="name" value="<?= $regName ?>">
+            <span class="reg-field-error" id="err_username"></span>
           </div>
+
           <div class="mb-3">
             <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Email address</label>
-            <input type="email" name="email" class="reg-input form-control"
+            <input type="email" name="email" id="reg_email" class="reg-input form-control"
                    maxlength="254" required autocomplete="email" value="<?= $regEmail ?>">
+            <span class="reg-field-error" id="err_email"></span>
           </div>
+
           <div class="mb-3">
             <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Country</label>
-            <input type="text" name="country" class="reg-input form-control"
+            <input type="text" name="country" id="reg_country" class="reg-input form-control"
                    maxlength="100" required autocomplete="country-name" value="<?= $regCountry ?>">
+            <span class="reg-field-error" id="err_country"></span>
           </div>
+
           <div class="mb-3">
             <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Phone</label>
-            <input type="tel" name="phone" class="reg-input form-control"
+            <input type="tel" name="phone" id="reg_phone" class="reg-input form-control"
                    maxlength="20" required autocomplete="tel" value="<?= $regPhone ?>">
+            <span class="reg-field-error" id="err_phone"></span>
           </div>
+
           <div class="mb-3 position-relative">
             <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Password</label>
             <div class="d-flex align-items-center">
@@ -1610,7 +1682,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <i class="bi bi-eye-slash" id="regPwIcon"></i>
               </button>
             </div>
-            <!-- Password strength bar -->
+            <span class="reg-field-error" id="err_password"></span>
             <div style="margin-top:6px">
               <div style="height:4px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden">
                 <div id="pwStrengthBar" style="height:100%;width:0%;border-radius:2px;transition:width .3s,background .3s"></div>
@@ -1620,24 +1692,87 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>
             </div>
           </div>
+
           <div class="mb-4 form-check">
             <input type="checkbox" class="form-check-input" id="regTerms" required>
             <label class="form-check-label" for="regTerms"
                    style="color:rgba(255,255,255,.8);font-size:.76rem;line-height:1.4">
               I agree to the Terms &amp; Conditions and Privacy Policy of Selah Aesthetics.
             </label>
+            <span class="reg-field-error" id="err_terms"></span>
           </div>
+
           <button type="submit" id="regSubmitBtn"
                   style="width:100%;padding:13px;background:#111827;color:white;border:none;border-radius:30px;font-weight:800;font-size:.9rem;letter-spacing:2px;text-transform:uppercase;transition:opacity .2s"
                   onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
             CREATE ACCOUNT
           </button>
         </form>
+
         <div class="text-center mt-3" style="color:rgba(255,255,255,.8);font-size:.82rem">
           Already have an account?
           <a href="#" onclick="switchModal('registerModal','loginModal')"
              style="color:white;font-weight:700;text-decoration:underline">Sign in</a>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATION SUCCESS POPUP -->
+<div class="modal fade" id="regSuccessModal" tabindex="-1" aria-labelledby="regSuccessModalLabel" aria-modal="true" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:24px;overflow:hidden;background:#fff">
+      <!-- Gradient top band -->
+      <div style="background:linear-gradient(135deg,#6B2D8B,#0D9488);padding:32px 24px 28px;text-align:center">
+        <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 16px;font-size:2.4rem;color:white">
+          <i class="bi bi-patch-check-fill"></i>
+        </div>
+        <h5 id="regSuccessModalLabel" style="color:white;font-weight:800;font-size:1.2rem;margin:0;letter-spacing:.5px">
+          Registration Successful!
+        </h5>
+      </div>
+      <!-- Body -->
+      <div style="padding:28px 32px 32px;text-align:center">
+        <p style="color:#1a1a2e;font-size:.95rem;font-weight:600;margin-bottom:10px">
+          🎉 Thank you for signing up!
+        </p>
+        <p style="color:#555;font-size:.87rem;line-height:1.7;margin-bottom:24px">
+          Your account has been submitted.<br>
+          Please wait for <strong>admin approval</strong> before you can log in.<br>
+          We'll notify you once your account is approved.
+        </p>
+        <!-- Steps -->
+        <div style="background:#f8f4fb;border-radius:12px;padding:18px 20px;text-align:left;margin-bottom:24px">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;font-size:.83rem;color:#444">
+            <div style="width:26px;height:26px;border-radius:50%;background:#6B2D8B;color:white;
+                        font-weight:800;font-size:.75rem;display:flex;align-items:center;
+                        justify-content:center;flex-shrink:0">1</div>
+            <div><strong>Verify your email</strong> — check your inbox and click the verification link we sent.</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;font-size:.83rem;color:#444">
+            <div style="width:26px;height:26px;border-radius:50%;background:#6B2D8B;color:white;
+                        font-weight:800;font-size:.75rem;display:flex;align-items:center;
+                        justify-content:center;flex-shrink:0">2</div>
+            <div><strong>Wait for admin approval</strong> — our team will review your account shortly.</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:.83rem;color:#444">
+            <div style="width:26px;height:26px;border-radius:50%;background:#0D9488;color:white;
+                        font-weight:800;font-size:.75rem;display:flex;align-items:center;
+                        justify-content:center;flex-shrink:0">3</div>
+            <div><strong>You're in!</strong> — once approved, log in and book your appointment.</div>
+          </div>
+        </div>
+        <a href="<?= BASE_URL ?>/public/home.php"
+           style="display:inline-block;background:linear-gradient(135deg,#6B2D8B,#0D9488);
+                  color:white;border:none;border-radius:30px;padding:13px 36px;
+                  font-size:.9rem;font-weight:800;text-decoration:none;
+                  letter-spacing:1px;text-transform:uppercase;transition:opacity .2s"
+           onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <i class="bi bi-house me-2"></i>Back to Home
+        </a>
       </div>
     </div>
   </div>
@@ -1654,6 +1789,14 @@ document.addEventListener('DOMContentLoaded', function () {
 .reg-input:focus { border-bottom-color: white !important; background: transparent !important; color: white !important; box-shadow: none !important; }
 .reg-input::placeholder { color: rgba(255,255,255,.4) !important; }
 .reg-input:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px #7B3FC0 inset !important; -webkit-text-fill-color: white !important; }
+.reg-input.reg-error { border-bottom-color: #f87171 !important; }
+.reg-field-error {
+  display: block;
+  color: #fca5a5;
+  font-size: .75rem;
+  margin-top: 4px;
+  min-height: 1em;
+}
 </style>
 
 </body>
