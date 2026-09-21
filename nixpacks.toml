@@ -19,7 +19,10 @@ nixPkgs = [
 cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
 
 [phases.build]
-cmds = ["mkdir -p uploads/receipts && chmod -R 777 uploads"]
+cmds = [
+  "mkdir -p uploads/receipts && chmod -R 777 uploads",
+  "echo 'memory_limit=256M' >> /etc/php82/php.ini || true"
+]
 
 [start]
-cmd = "php -S 0.0.0.0:$PORT index.php"
+cmd = "php -d memory_limit=256M -S 0.0.0.0:$PORT index.php"
