@@ -5,27 +5,46 @@
 
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH));
 
-// Serve static files directly
-$staticExtensions = ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'ico', 'svg', 'woff', 'woff2', 'ttf', 'eot', 'map'];
+// Serve static files directly with correct MIME types
+$mimeTypes = [
+    'css'   => 'text/css',
+    'js'    => 'application/javascript',
+    'jpg'   => 'image/jpeg',
+    'jpeg'  => 'image/jpeg',
+    'png'   => 'image/png',
+    'gif'   => 'image/gif',
+    'ico'   => 'image/x-icon',
+    'svg'   => 'image/svg+xml',
+    'woff'  => 'font/woff',
+    'woff2' => 'font/woff2',
+    'ttf'   => 'font/ttf',
+    'eot'   => 'application/vnd.ms-fontobject',
+    'map'   => 'application/json',
+    'pdf'   => 'application/pdf',
+];
+
 $ext = strtolower(pathinfo($uri, PATHINFO_EXTENSION));
 
-if (in_array($ext, $staticExtensions)) {
+if (isset($mimeTypes[$ext])) {
     $filePath = __DIR__ . $uri;
     if (file_exists($filePath)) {
-        return false; // Let PHP built-in server serve it
+        header('Content-Type: ' . $mimeTypes[$ext]);
+        header('Cache-Control: public, max-age=86400');
+        readfile($filePath);
+        exit;
     }
 }
 
 // If a specific PHP file is requested, serve it directly
 if ($uri !== '/' && $uri !== '/index.php') {
     $filePath = __DIR__ . $uri;
-    if (file_exists($filePath) && is_file($filePath) && pathinfo($filePath, PATHINFO_EXTENSION) === 'php') {
+    if (file_exists($filePath) && is_file($filePath) && $ext === 'php') {
         require $filePath;
         return;
     }
 }
 
-// Root — redirect to landing page
+// Root — load landing page
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/modules/SessionGuard.php';
 SessionGuard::start();
@@ -35,5 +54,4 @@ if (SessionGuard::isAdminLoggedIn()) {
     exit;
 }
 
-// Load landing page directly (no redirect)
 require __DIR__ . '/public/home.php';
