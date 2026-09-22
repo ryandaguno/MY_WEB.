@@ -1,6 +1,7 @@
 <?php
-$pageTitle = 'Booking Submitted';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
 require_once __DIR__ . '/../../config/db.php';
 
@@ -30,6 +31,9 @@ $booking = $stmt->fetch();
 if (!$booking) {
     header('Location: ' . BASE_URL . '/public/my_bookings.php'); exit;
 }
+
+$pageTitle = 'Booking Submitted';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 <style>
 .gs-page { background:#f8f4fb; min-height:calc(100vh - 56px); padding:48px 16px 80px; font-family:'Segoe UI',Arial,sans-serif; }
@@ -76,6 +80,16 @@ if (!$booking) {
       <div class="gs-info-row"><span>Downpayment</span><b>₱<?= number_format($booking['downpayment_amount'], 2) ?></b></div>
     </div>
     <div class="gs-notice"><i class="bi bi-bell me-1"></i><strong>What happens next?</strong><br>Our admin will review your screenshot and verify your payment. You will be notified once your appointment is confirmed. 🔔</div>
+
+    <!-- Save receipt reminder -->
+    <div style="background:#fff8e1;border:2px solid #f59e0b;border-radius:12px;padding:16px 18px;margin-bottom:20px;text-align:left">
+      <div style="font-size:.92rem;font-weight:800;color:#92400e;margin-bottom:6px">
+        <i class="bi bi-camera-fill me-1"></i>📸 Save Your GCash Receipt!
+      </div>
+      <p style="font-size:.84rem;color:#78350f;margin:0;line-height:1.6">
+        Please <strong>keep a copy of your GCash payment screenshot</strong>. If there are any issues with verification, you may be asked to resubmit it. Do not delete the receipt from your phone.
+      </p>
+    </div>
     <a href="<?= BASE_URL ?>/public/my_bookings.php" class="gs-btn"><i class="bi bi-calendar-check me-1"></i>Go to My Bookings</a>
     <p class="gs-signoff">Thank you for choosing <strong>Selah Aesthetics</strong>. 💜<br>We look forward to serving you!</p>
   </div>

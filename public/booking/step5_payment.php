@@ -178,12 +178,16 @@ require_once __DIR__ . '/../../includes/header.php';
         <form method="post" enctype="multipart/form-data" id="payForm">
           <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
 
-          <div class="s5-method-card" id="gcashCard" onclick="selectPayment('gcash')">
+          <div class="s5-method-card active" id="gcashCard" onclick="selectPayment('gcash')">
             <div class="s5-method-header">
-              <input type="radio" name="payment_method" value="gcash" id="payGcash">
+              <input type="radio" name="payment_method" value="gcash" id="payGcash" checked>
               <label for="payGcash" style="cursor:pointer;margin:0"><i class="bi bi-qr-code me-1"></i>Pay with GCash</label>
             </div>
-            <div class="s5-method-body" id="gcashSection" style="display:none">
+            <div class="s5-method-body" id="gcashSection">
+              <div style="background:#e8f5e9;border:1.5px solid #2ecc40;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.82rem;color:#1a6b1a;">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <strong>How to pay:</strong> Send ₱<?= number_format($downpayment,2) ?> to GCash number <strong><?= GCASH_NUMBER ?></strong>, then take a screenshot of your receipt and upload it below.
+              </div>
               <p class="mb-1">GCash Number: <strong><?= GCASH_NUMBER ?></strong></p>
               <img src="<?= GCASH_QR_PATH ?>" alt="GCash QR" style="max-width:140px;border-radius:8px;display:block;margin:8px 0">
               <label style="display:block;font-weight:600;margin-bottom:4px">Upload Payment Screenshot *</label>
@@ -202,7 +206,7 @@ require_once __DIR__ . '/../../includes/header.php';
             </div>
           </div>
 
-          <button type="submit" class="s5-confirm-btn" id="confirmBtn" disabled>
+          <button type="submit" class="s5-confirm-btn" id="confirmBtn">
             <i class="bi bi-check-circle me-1" id="confirmIcon"></i>
             <span id="confirmLabel">Confirm Booking</span>
           </button>
