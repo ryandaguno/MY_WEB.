@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../modules/SessionGuard.php';
 SessionGuard::requireAdmin();
@@ -72,19 +72,9 @@ if ($currentDir === 'timeslots') {
       </a>
 
       <!-- Users -->
-      <?php
-        $pendingUsers = 0;
-        try {
-            $puStmt = getDB()->query("SELECT COUNT(*) FROM clients WHERE COALESCE(account_status,'pending') = 'pending' AND is_verified = 1");
-            $pendingUsers = (int)$puStmt->fetchColumn();
-        } catch (Exception $e) {}
-      ?>
       <a class="nav-link<?= $currentDir === 'users' ? ' active' : '' ?>"
          href="<?= BASE_URL ?>/admin/users/index.php">
         <i class="bi bi-person-gear me-2"></i>Users
-        <?php if ($pendingUsers > 0): ?>
-          <span class="badge bg-warning text-dark ms-1"><?= $pendingUsers ?></span>
-        <?php endif; ?>
       </a>
 
       <!-- Stylists -->
