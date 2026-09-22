@@ -29,6 +29,7 @@ $csrfToken  = SessionGuard::generateCsrfToken();
 
 $pageTitle = 'Step 1: Choose Service';
 require_once __DIR__ . '/../../includes/header.php';
+?>
 <div class="container my-4">
   <!-- Progress -->
   <div class="booking-steps">

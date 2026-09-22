@@ -22,6 +22,7 @@ $client    = $stmt->fetch();
 $csrfToken = SessionGuard::generateCsrfToken();
 $pageTitle = 'Step 4: Add Details';
 require_once __DIR__ . '/../../includes/header.php';
+?>
 <div class="container my-4" style="max-width:600px">
   <div class="booking-steps">
     <?php foreach ([1=>'Service',2=>'Stylist',3=>'Date & Time',4=>'Details',5=>'Confirm'] as $n => $lbl): ?>

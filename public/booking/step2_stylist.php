@@ -24,6 +24,7 @@ $selected  = $_SESSION['booking']['stylist_id'] ?? '';
 $csrfToken = SessionGuard::generateCsrfToken();
 $pageTitle = 'Step 2: Pick Stylist';
 require_once __DIR__ . '/../../includes/header.php';
+?>
 <div class="container my-4">
   <div class="booking-steps">
     <?php foreach ([1=>'Service',2=>'Stylist',3=>'Date & Time',4=>'Details',5=>'Confirm'] as $n => $label): ?>
