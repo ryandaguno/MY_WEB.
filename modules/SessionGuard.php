@@ -3,9 +3,80 @@ require_once __DIR__ . '/../config/config.php';
 
 class SessionGuard {
 
+    /** Call once at the very top of every page to start DB-backed sessions */
     public static function start(): void {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        if (session_status() !== PHP_SESSION_NONE) return;
+
+        // Use database session handler on Railway (when MYSQLHOST is set)
+        if (getenv('MYSQLHOST')) {
+            self::registerDbHandler();
+        }
+
+        ini_set('session.gc_maxlifetime', 86400);       // 24 h
+        ini_set('session.cookie_lifetime', 86400);
+        ini_set('session.cookie_httponly', 1);
+        ini_set('session.cookie_samesite', 'Lax');
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            ini_set('session.cookie_secure', 1);
+        }
+        session_start();
+    }
+
+    // ----------------------------------------------------------------
+    // DB-BACKED SESSION HANDLER
+    // ----------------------------------------------------------------
+    private static function registerDbHandler(): void {
+        try {
+            require_once __DIR__ . '/../config/db.php';
+            $db = getDB();
+
+            // Create sessions table if it doesn't exist
+            $db->exec("CREATE TABLE IF NOT EXISTS php_sessions (
+                session_id  VARCHAR(128) NOT NULL PRIMARY KEY,
+                data        MEDIUMTEXT   NOT NULL DEFAULT '',
+                last_access INT UNSIGNED NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+            session_set_save_handler(
+                // open
+                function($path, $name) { return true; },
+                // close
+                function() { return true; },
+                // read
+                function($id) use ($db) {
+                    try {
+                        $s = $db->prepare('SELECT data FROM php_sessions WHERE session_id = ? AND last_access > ?');
+                        $s->execute([$id, time() - 86400]);
+                        $row = $s->fetch(PDO::FETCH_ASSOC);
+                        return $row ? $row['data'] : '';
+                    } catch (Exception $e) { return ''; }
+                },
+                // write
+                function($id, $data) use ($db) {
+                    try {
+                        $s = $db->prepare('REPLACE INTO php_sessions (session_id, data, last_access) VALUES (?, ?, ?)');
+                        $s->execute([$id, $data, time()]);
+                        return true;
+                    } catch (Exception $e) { return false; }
+                },
+                // destroy
+                function($id) use ($db) {
+                    try {
+                        $db->prepare('DELETE FROM php_sessions WHERE session_id = ?')->execute([$id]);
+                        return true;
+                    } catch (Exception $e) { return false; }
+                },
+                // gc
+                function($maxlifetime) use ($db) {
+                    try {
+                        $db->prepare('DELETE FROM php_sessions WHERE last_access < ?')->execute([time() - $maxlifetime]);
+                        return true;
+                    } catch (Exception $e) { return false; }
+                }
+            );
+            register_shutdown_function('session_write_close');
+        } catch (Exception $e) {
+            // Fall back to file sessions silently
         }
     }
 
