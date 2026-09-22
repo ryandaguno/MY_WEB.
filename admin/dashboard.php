@@ -1,4 +1,21 @@
 <?php
+// DIAGNOSTIC: catch and display ALL errors before anything else
+ob_start();
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+set_error_handler(function($no,$str,$file,$line){
+    ob_clean();
+    die("<pre style='background:red;color:white;padding:20px;font-size:14px'>ERROR $no: $str\nFile: $file\nLine: $line</pre>");
+});
+register_shutdown_function(function(){
+    $e = error_get_last();
+    if($e && in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR])){
+        ob_clean();
+        die("<pre style='background:red;color:white;padding:20px;font-size:14px'>FATAL: {$e['message']}\nFile: {$e['file']}\nLine: {$e['line']}</pre>");
+    }
+});
+
 $pageTitle = 'Dashboard';
 require_once __DIR__ . '/includes/admin_header.php';
 require_once __DIR__ . '/../config/db.php';
