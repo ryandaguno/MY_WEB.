@@ -12,9 +12,9 @@ if ($id) {
     if ($cnt > 0) {
         SessionGuard::flashMessage('error', "Cannot delete: $cnt active booking(s) reference this service.");
     } else {
-        // Soft delete
-        $db->prepare("UPDATE services SET is_active=0 WHERE id=?")->execute([$id]);
-        SessionGuard::flashMessage('success', 'Service removed from catalog.');
+        // Hard delete
+        $db->prepare("DELETE FROM services WHERE id=?")->execute([$id]);
+        SessionGuard::flashMessage('success', 'Service deleted successfully.');
     }
 }
 header('Location: ' . BASE_URL . '/admin/services/index.php');

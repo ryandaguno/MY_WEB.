@@ -61,11 +61,6 @@ $catColors = ['Hair'=>'#6B2D8B','Facial'=>'#0d9488','Nails'=>'#db2777',
 
           <div class="d-flex justify-content-between align-items-start mb-2">
             <div class="fw-bold" style="font-size:.95rem"><?= htmlspecialchars($s['name']) ?></div>
-            <?php if ($s['is_active']): ?>
-              <span class="badge" style="background:#10b981;font-size:.65rem">Active</span>
-            <?php else: ?>
-              <span class="badge bg-secondary" style="font-size:.65rem">Inactive</span>
-            <?php endif; ?>
           </div>
 
           <?php if ($s['description']): ?>
