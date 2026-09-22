@@ -134,15 +134,13 @@ foreach ($tabs as $tabId => [$list, $type]):
         $date      = date('M j, Y', strtotime($b['slot_date']));
         $time      = date('g:i A',  strtotime($b['start_time']));
         $ps        = $b['payment_status'] ?? '';
-        $badgeCls  = match(true) {
-            $ps === 'Pending Verification' => 'badge-pv',
-            $ps === 'Downpayment Paid'     => 'badge-dp',
-            $ps === 'Fully Paid'           => 'badge-fp',
-            $ps === 'Partial Payment'      => 'badge-pp',
-            $ps === 'Paid'                 => 'badge-pd',
-            $ps === 'Rejected'             => 'badge-rj',
-            default                        => 'badge-np',
-        };
+        if ($ps === 'Pending Verification')   { $badgeCls = 'badge-pv'; }
+        elseif ($ps === 'Downpayment Paid')  { $badgeCls = 'badge-dp'; }
+        elseif ($ps === 'Fully Paid')        { $badgeCls = 'badge-fp'; }
+        elseif ($ps === 'Partial Payment')   { $badgeCls = 'badge-pp'; }
+        elseif ($ps === 'Paid')              { $badgeCls = 'badge-pd'; }
+        elseif ($ps === 'Rejected')          { $badgeCls = 'badge-rj'; }
+        else                                 { $badgeCls = 'badge-np'; }
         $psLabel    = $ps ?: 'No Payment';
         $paidAmt    = !empty($b['txn_amount'])
                         ? '₱' . number_format($b['txn_amount'], 2)

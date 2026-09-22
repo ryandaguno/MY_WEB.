@@ -218,12 +218,10 @@ $isPending  = ($tx['status'] === 'Pending Verification');
       <div class="vp-card-header"><i class="bi bi-info-circle me-2"></i>Verification Result</div>
       <div class="vp-card-body">
         <?php
-          $cls = match($tx['status']) {
-              'Downpayment Paid' => 'badge-dp',
-              'Fully Paid'       => 'badge-fp',
-              'Partial Payment'  => 'badge-pp',
-              default            => 'badge-na',
-          };
+          $cls = $tx['status'] === 'Downpayment Paid' ? 'badge-dp'
+               : ($tx['status'] === 'Fully Paid'      ? 'badge-fp'
+               : ($tx['status'] === 'Partial Payment' ? 'badge-pp'
+               : 'badge-na'));
         ?>
         <div class="vp-row"><span class="label">Final Status</span>
           <span class="value"><span class="vp-status-badge <?= $cls ?>"><?= htmlspecialchars($tx['status']) ?></span></span>

@@ -120,7 +120,7 @@ $csrfToken = SessionGuard::generateCsrfToken();
 .dash-card.c-completed { background:linear-gradient(135deg,#10b981,#059669); }
 .dash-card.c-cancelled { background:linear-gradient(135deg,#ef4444,#dc2626); }
 .dash-card.c-today     { background:linear-gradient(135deg,#3b82f6,#1d4ed8); }
-.dash-card.c-active    box-shadow: 0 0 0 3px #fff, 0 0 0 5px #6B2D8B !important; }
+.dash-card.c-active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #6B2D8B !important; }
 
 /* ── Schedule pills ── */
 .sched-pill {
@@ -262,12 +262,15 @@ $csrfToken = SessionGuard::generateCsrfToken();
             <td>
               <?php
                 $ps = $b['payment_status'] ?? '';
-                $pCls = match(true) {
-                    $ps === 'Paid' || $ps === 'Downpayment Paid' || $ps === 'Fully Paid' => 'success',
-                    $ps === 'Pending Verification' => 'warning',
-                    $ps === 'Rejected' => 'danger',
-                    default => 'secondary',
-                };
+                if ($ps === 'Paid' || $ps === 'Downpayment Paid' || $ps === 'Fully Paid') {
+                    $pCls = 'success';
+                } elseif ($ps === 'Pending Verification') {
+                    $pCls = 'warning';
+                } elseif ($ps === 'Rejected') {
+                    $pCls = 'danger';
+                } else {
+                    $pCls = 'secondary';
+                }
                 $psLabel = $ps ?: 'Unpaid';
               ?>
               <span class="badge bg-<?= $pCls ?>"><?= htmlspecialchars($psLabel) ?></span>
