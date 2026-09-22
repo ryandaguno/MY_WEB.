@@ -89,9 +89,9 @@ require_once __DIR__ . '/../../includes/header.php';
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       <strong>PayPal is not yet available.</strong><br>
       Please use <strong>GCash</strong> to complete your payment.<br><br>
-      <a href="<?= BASE_URL ?>/public/booking/cancel_paypal.php?booking_id=<?= $bookingId ?>"
-         class="btn btn-sm" style="background:#6B2D8B;color:#fff;border-radius:8px">
-        ← Switch to GCash Payment
+      <a href="<?= BASE_URL ?>/public/booking/gcash_pay.php?booking_id=<?= $bookingId ?>"
+         class="btn btn-sm" style="background:#005f2f;color:#fff;border-radius:8px;padding:8px 18px;font-weight:700">
+        <i class="bi bi-qr-code me-1"></i>Pay with GCash Instead
       </a>
     </div>
     <?php else: ?>
@@ -108,7 +108,7 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
     <?php endif; ?>
 
-    <a href="<?= BASE_URL ?>/public/booking/cancel_paypal.php?booking_id=<?= $bookingId ?>" class="pp-cancel">← Cancel this booking and start over</a>
+    <a href="<?= BASE_URL ?>/public/my_bookings.php" class="pp-cancel">← Cancel and go to My Bookings</a>
   </div>
 </div>
 

@@ -59,12 +59,15 @@ function bookingRow(array $b, bool $showCancel = false): string {
 
     // Show downpayment amount with payment status
     $downpayment = '₱' . number_format($b['downpayment_amount'] ?? 0, 2);
-    if ($b['payment_status'] === 'Paid' || $b['payment_status'] === 'Downpayment Paid' || $b['payment_status'] === 'Fully Paid') {
-        $pay = "<span class='badge bg-success'>{$b['payment_status']}</span><br><small class='text-muted'>$downpayment</small>";
-    } elseif ($b['payment_status'] === 'Pending Verification') {
-        $pay = "<span class='badge bg-warning text-dark'>Pending</span><br><small class='text-muted'>$downpayment</small>";
-    } elseif ($b['payment_status'] === 'Rejected') {
-        $pay = "<span class='badge bg-danger'>Rejected</span><br><small class='text-muted'>$downpayment</small>";
+    $ps = $b['payment_status'] ?? '';
+    if (in_array($ps, ['Paid','Verified - Downpayment','Verified - Full','Downpayment Paid','Fully Paid'])) {
+        $pay = "<span class='badge bg-success'>Paid ✓</span><br><small class='text-muted'>$downpayment</small>";
+    } elseif ($ps === 'Pending Verification') {
+        $pay = "<span class='badge bg-warning text-dark'><i class='bi bi-hourglass-split me-1'></i>Under Review</span><br><small class='text-muted'>$downpayment</small>";
+    } elseif ($ps === 'Rejected') {
+        $pay = "<span class='badge bg-danger'>Rejected</span><br><small class='text-muted'>Resubmit needed</small>";
+    } elseif ($ps === 'Verified - Partial') {
+        $pay = "<span class='badge bg-info text-dark'>Partial</span><br><small class='text-muted'>$downpayment</small>";
     } else {
         $pay = "<span class='badge bg-secondary'>Unpaid</span><br><small class='text-muted'>Due: $downpayment</small>";
     }
@@ -76,6 +79,10 @@ function bookingRow(array $b, bool $showCancel = false): string {
             $cancel = "<a href='".BASE_URL."/public/cancel_booking.php?id={$b['id']}' class='btn btn-sm btn-outline-danger'>Cancel</a>";
         }
     }
+    $payNow = '';
+    if ($b['status'] === 'Pending' && in_array($ps, ['', 'Rejected'])) {
+        $payNow = "<a href='".BASE_URL."/public/booking/gcash_pay.php?booking_id={$b['id']}' class='btn btn-sm btn-success me-1'><i class='bi bi-qr-code me-1'></i>Pay Now</a>";
+    }
     return "<tr>
       <td>#" . htmlspecialchars($b['id']) . "</td>
       <td>" . htmlspecialchars($b['service_name']) . "</td>
@@ -84,6 +91,7 @@ function bookingRow(array $b, bool $showCancel = false): string {
       <td>" . statusBadge($b['status']) . "</td>
       <td>$pay</td>
       <td>
+        $payNow
         <a href='".BASE_URL."/public/booking_detail.php?id={$b['id']}' class='btn btn-sm btn-sa-primary me-1'>View</a>
         $cancel
       </td>
