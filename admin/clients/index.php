@@ -38,6 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete' && $clientId) {
         $db->prepare("DELETE FROM clients WHERE id = ?")->execute([$clientId]);
         SessionGuard::flashMessage('success', 'Client account deleted.');
+    } elseif ($action === 'reset_password' && $clientId) {
+        $newPw = $_POST['new_password'] ?? '';
+        if (strlen($newPw) >= 8) {
+            $hash = password_hash($newPw, PASSWORD_BCRYPT, ['cost' => 12]);
+            $db->prepare('UPDATE clients SET password_hash=?, failed_login_attempts=0, locked_until=NULL WHERE id=?')
+               ->execute([$hash, $clientId]);
+            SessionGuard::flashMessage('success', 'Password reset successfully for client #' . $clientId . '.');
+        } else {
+            SessionGuard::flashMessage('error', 'Password must be at least 8 characters.');
+        }
     }
     header('Location: ' . BASE_URL . '/admin/clients/index.php'); exit;
 }
@@ -148,6 +158,12 @@ $csrfToken = SessionGuard::generateCsrfToken();
                 <i class="bi bi-trash"></i>
               </button>
             </form>
+            <!-- Reset Password button (outside the approve/reject form) -->
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm mt-1"
+                    onclick="openResetModal(<?= $c['id'] ?>, '<?= htmlspecialchars($c['username'], ENT_QUOTES) ?>')">
+              <i class="bi bi-key me-1"></i>Reset PW
+            </button>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -156,5 +172,122 @@ $csrfToken = SessionGuard::generateCsrfToken();
   </div>
 </div>
 <?php endif; ?>
+
+<!-- ── Reset Password Modal ── -->
+<div class="modal fade" id="resetPwModal" tabindex="-1" aria-labelledby="resetPwModalLabel" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#6B2D8B,#0D9488)">
+        <h5 class="modal-title fw-bold" id="resetPwModalLabel">
+          <i class="bi bi-key-fill me-2"></i>Reset Password
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted small mb-3">
+          Setting a new password for <strong id="resetClientName"></strong>.
+          The client will not receive a notification.
+        </p>
+        <form method="post" id="resetPwForm">
+          <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+          <input type="hidden" name="action"    value="reset_password">
+          <input type="hidden" name="client_id" id="resetClientId">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">New Password</label>
+            <div class="input-group">
+              <input type="password" name="new_password" id="resetNewPw"
+                     class="form-control" placeholder="Min. 8 characters" required>
+              <button type="button" class="btn btn-outline-secondary" id="toggleResetPw">
+                <i class="bi bi-eye" id="resetEyeIcon"></i>
+              </button>
+            </div>
+            <div class="progress mt-2" style="height:4px">
+              <div id="resetStrengthBar" class="progress-bar" style="width:0%;transition:width .3s"></div>
+            </div>
+            <small id="resetStrengthLabel" class="text-muted"></small>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Confirm Password</label>
+            <input type="password" id="resetConfirmPw" class="form-control"
+                   placeholder="Repeat password">
+            <div id="resetMatchMsg" class="form-text"></div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-danger px-4 fw-bold">
+              <i class="bi bi-shield-lock me-1"></i>Reset Password
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openResetModal(id, name) {
+  document.getElementById('resetClientId').value = id;
+  document.getElementById('resetClientName').textContent = name;
+  document.getElementById('resetNewPw').value    = '';
+  document.getElementById('resetConfirmPw').value = '';
+  document.getElementById('resetStrengthBar').style.width = '0%';
+  document.getElementById('resetStrengthLabel').textContent = '';
+  document.getElementById('resetMatchMsg').innerHTML = '';
+  new bootstrap.Modal(document.getElementById('resetPwModal')).show();
+}
+
+document.getElementById('toggleResetPw').addEventListener('click', function() {
+  var inp = document.getElementById('resetNewPw');
+  var ico = document.getElementById('resetEyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text'; ico.className = 'bi bi-eye-slash';
+  } else {
+    inp.type = 'password'; ico.className = 'bi bi-eye';
+  }
+});
+
+document.getElementById('resetNewPw').addEventListener('input', function() {
+  var v = this.value, score = 0;
+  if (v.length >= 8)        score++;
+  if (/[A-Z]/.test(v))      score++;
+  if (/[0-9]/.test(v))      score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  var colors = ['','bg-danger','bg-warning','bg-info','bg-success'];
+  var labels = ['','Weak','Fair','Good','Strong'];
+  var bar = document.getElementById('resetStrengthBar');
+  bar.style.width = (score * 25) + '%';
+  bar.className   = 'progress-bar ' + (colors[score] || '');
+  document.getElementById('resetStrengthLabel').textContent = labels[score] || '';
+  // re-check confirm match
+  document.getElementById('resetConfirmPw').dispatchEvent(new Event('input'));
+});
+
+document.getElementById('resetConfirmPw').addEventListener('input', function() {
+  var msg = document.getElementById('resetMatchMsg');
+  if (!this.value) { msg.innerHTML = ''; return; }
+  if (this.value === document.getElementById('resetNewPw').value) {
+    msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Passwords match</span>';
+  } else {
+    msg.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle me-1"></i>Passwords do not match</span>';
+  }
+});
+
+document.getElementById('resetPwForm').addEventListener('submit', function(e) {
+  var pw  = document.getElementById('resetNewPw').value;
+  var cpw = document.getElementById('resetConfirmPw').value;
+  if (pw.length < 8) {
+    e.preventDefault();
+    alert('Password must be at least 8 characters.');
+    return;
+  }
+  if (pw !== cpw) {
+    e.preventDefault();
+    alert('Passwords do not match.');
+  }
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/admin_footer.php'; ?>

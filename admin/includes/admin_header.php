@@ -71,12 +71,6 @@ if ($currentDir === 'timeslots') {
         <?php endif; ?>
       </a>
 
-      <!-- Users -->
-      <a class="nav-link<?= $currentDir === 'users' ? ' active' : '' ?>"
-         href="<?= BASE_URL ?>/admin/users/index.php">
-        <i class="bi bi-person-gear me-2"></i>Users
-      </a>
-
       <!-- Stylists -->
       <a class="nav-link<?= $currentDir === 'stylists' ? ' active' : '' ?>"
          href="<?= BASE_URL ?>/admin/stylists/index.php">
