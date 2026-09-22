@@ -94,7 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: ' . BASE_URL . '/public/booking/gcash_success.php'); exit;
                 }
             } elseif (($_POST['payment_method'] ?? '') === 'paypal') {
-                // Booking created — redirect to PayPal; booking stays Pending until capture confirmed
+                // Keep booking session alive in case user needs to come back
+                // Don't unset until PayPal confirms
+                $_SESSION['paypal_pending_booking_id'] = $bookingId;
                 unset($_SESSION['booking']);
                 header('Location: ' . BASE_URL . '/public/booking/paypal_pay.php?booking_id=' . $bookingId); exit;
             } else {

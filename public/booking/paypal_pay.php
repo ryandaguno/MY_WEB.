@@ -87,11 +87,11 @@ require_once __DIR__ . '/../../includes/header.php';
     <div style="background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;
                 padding:16px 18px;text-align:center;font-size:.88rem;color:#856404;margin-bottom:16px">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <strong>PayPal is not configured yet.</strong><br>
-      Please use <strong>GCash</strong> to complete your payment, or contact the salon.<br>
-      <a href="<?= BASE_URL ?>/public/booking/step5_payment.php"
-         class="btn btn-sm mt-2" style="background:#6B2D8B;color:#fff;border-radius:8px">
-        ← Back to Payment Options
+      <strong>PayPal is not yet available.</strong><br>
+      Please use <strong>GCash</strong> to complete your payment.<br><br>
+      <a href="<?= BASE_URL ?>/public/booking/cancel_paypal.php?booking_id=<?= $bookingId ?>"
+         class="btn btn-sm" style="background:#6B2D8B;color:#fff;border-radius:8px">
+        ← Switch to GCash Payment
       </a>
     </div>
     <?php else: ?>
@@ -108,7 +108,7 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
     <?php endif; ?>
 
-    <a href="<?= BASE_URL ?>/public/my_bookings.php" class="pp-cancel">← Cancel and go back to bookings</a>
+    <a href="<?= BASE_URL ?>/public/booking/cancel_paypal.php?booking_id=<?= $bookingId ?>" class="pp-cancel">← Cancel this booking and start over</a>
   </div>
 </div>
 
