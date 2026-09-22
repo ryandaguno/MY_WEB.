@@ -82,6 +82,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (($_POST['payment_method'] ?? '') === 'gcash') {
                 $uploadResult = $ph->uploadGCashReceipt($_FILES['receipt'] ?? [], $bookingId);
                 if (!$uploadResult['success']) {
+                    // Upload failed — cancel the booking so the slot is freed
+                    $db->prepare("UPDATE bookings SET status = 'Cancelled' WHERE id = ?")
+                       ->execute([$bookingId]);
+                    $db->prepare("UPDATE schedules SET is_available = 1 WHERE id = ?")
+                       ->execute([(int)$bk['schedule_id']]);
                     $error = implode(' ', $uploadResult['errors']);
                 } else {
                     unset($_SESSION['booking']);
@@ -89,9 +94,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: ' . BASE_URL . '/public/booking/gcash_success.php'); exit;
                 }
             } elseif (($_POST['payment_method'] ?? '') === 'paypal') {
-                // Booking is created — redirect to PayPal payment page
+                // Booking created — redirect to PayPal; booking stays Pending until capture confirmed
                 unset($_SESSION['booking']);
                 header('Location: ' . BASE_URL . '/public/booking/paypal_pay.php?booking_id=' . $bookingId); exit;
+            } else {
+                $error = 'Please select a payment method.';
             }
         }
     }
