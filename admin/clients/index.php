@@ -142,19 +142,19 @@ $csrfToken = SessionGuard::generateCsrfToken();
                 </button>
               <?php endif; ?>
               <?php if ($acctStatus !== 'rejected'): ?>
-                <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Reject this client?')">
+                <button type="button" class="btn btn-danger btn-sm"
+                        onclick="confirmClientAction('reject', <?= $c['id'] ?>, '<?= htmlspecialchars($c['username'], ENT_QUOTES) ?>')">
                   <i class="bi bi-x-circle me-1"></i>Reject
                 </button>
               <?php endif; ?>
               <?php if ($acctStatus === 'approved'): ?>
-                <button type="submit" name="action" value="reject" class="btn btn-outline-warning btn-sm"
-                        onclick="return confirm('Revoke access for this client?')">
+                <button type="button" class="btn btn-outline-warning btn-sm"
+                        onclick="confirmClientAction('revoke', <?= $c['id'] ?>, '<?= htmlspecialchars($c['username'], ENT_QUOTES) ?>')">
                   <i class="bi bi-slash-circle me-1"></i>Revoke
                 </button>
               <?php endif; ?>
-              <button type="submit" name="action" value="delete" class="btn btn-outline-danger btn-sm"
-                      onclick="return confirm('Delete this client account permanently?')">
+              <button type="button" class="btn btn-outline-danger btn-sm"
+                      onclick="confirmClientAction('delete', <?= $c['id'] ?>, '<?= htmlspecialchars($c['username'], ENT_QUOTES) ?>')">
                 <i class="bi bi-trash"></i>
               </button>
             </form>
@@ -173,7 +173,97 @@ $csrfToken = SessionGuard::generateCsrfToken();
 </div>
 <?php endif; ?>
 
-<!-- ── Reset Password Modal ── -->
+<!-- Hidden form for modal-triggered actions -->
+<form method="post" id="clientActionForm">
+  <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+  <input type="hidden" name="client_id"  id="modalClientId">
+  <input type="hidden" name="action"     id="modalAction">
+</form>
+
+<!-- Client Action Confirmation Modal -->
+<div class="modal fade" id="clientActionModal" tabindex="-1" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden">
+      <div id="clientModalHeader" style="padding:28px 24px 20px;text-align:center">
+        <div id="clientModalIcon"
+             style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 12px;font-size:2rem;color:white">
+        </div>
+        <h5 id="clientModalTitle" style="color:white;font-weight:800;margin:0;font-size:1.15rem"></h5>
+      </div>
+      <div style="padding:24px 28px;text-align:center">
+        <p style="color:#374151;font-size:.95rem;margin-bottom:6px" id="clientModalBody"></p>
+        <p style="color:#111827;font-weight:800;font-size:1.05rem;margin-bottom:14px" id="clientModalName"></p>
+        <p style="color:#6b7280;font-size:.82rem;margin-bottom:24px" id="clientModalWarning"></p>
+        <div class="d-flex gap-3">
+          <button type="button" class="btn btn-outline-secondary flex-fill fw-semibold"
+                  data-bs-dismiss="modal" style="border-radius:10px;padding:11px">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+          <button type="button" id="clientModalConfirm"
+                  class="btn flex-fill fw-bold text-white"
+                  style="border:none;border-radius:10px;padding:11px"
+                  onclick="document.getElementById('clientActionForm').submit()">
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmClientAction(action, id, name) {
+  var cfg = {
+    reject: {
+      title:   'Reject Client',
+      icon:    'bi bi-x-circle-fill',
+      bg:      'linear-gradient(135deg,#dc2626,#ef4444)',
+      body:    'Are you sure you want to reject',
+      warning: '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>The client will be notified by email.',
+      btnBg:   'linear-gradient(135deg,#dc2626,#ef4444)',
+      btnTxt:  '<i class="bi bi-x-circle me-1"></i>Yes, Reject'
+    },
+    revoke: {
+      title:   'Revoke Access',
+      icon:    'bi bi-slash-circle-fill',
+      bg:      'linear-gradient(135deg,#d97706,#f59e0b)',
+      body:    'Are you sure you want to revoke access for',
+      warning: '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>The client will no longer be able to log in.',
+      btnBg:   'linear-gradient(135deg,#d97706,#f59e0b)',
+      btnTxt:  '<i class="bi bi-slash-circle me-1"></i>Yes, Revoke'
+    },
+    delete: {
+      title:   'Delete Account',
+      icon:    'bi bi-trash3-fill',
+      bg:      'linear-gradient(135deg,#7f1d1d,#dc2626)',
+      body:    'Are you sure you want to permanently delete',
+      warning: '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>This <strong>cannot be undone</strong>. All data for this client will be removed.',
+      btnBg:   'linear-gradient(135deg,#7f1d1d,#dc2626)',
+      btnTxt:  '<i class="bi bi-trash3 me-1"></i>Yes, Delete'
+    }
+  };
+
+  var c = cfg[action];
+  document.getElementById('clientModalHeader').style.background = c.bg;
+  document.getElementById('clientModalIcon').innerHTML = '<i class="' + c.icon + '"></i>';
+  document.getElementById('clientModalTitle').textContent = c.title;
+  document.getElementById('clientModalBody').textContent  = c.body;
+  document.getElementById('clientModalName').textContent  = '"' + name + '"';
+  document.getElementById('clientModalWarning').innerHTML = c.warning;
+  document.getElementById('clientModalConfirm').style.background = c.btnBg;
+  document.getElementById('clientModalConfirm').innerHTML = c.btnTxt;
+
+  // Map action to form values
+  var formAction = (action === 'revoke') ? 'reject' : action;
+  document.getElementById('modalClientId').value = id;
+  document.getElementById('modalAction').value   = formAction;
+
+  new bootstrap.Modal(document.getElementById('clientActionModal')).show();
+}
+</script>
+
+<?php require_once __DIR__ . '/../includes/admin_footer.php'; ?> -->
 <div class="modal fade" id="resetPwModal" tabindex="-1" aria-labelledby="resetPwModalLabel" aria-modal="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
     <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden">

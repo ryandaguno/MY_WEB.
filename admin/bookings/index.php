@@ -286,9 +286,8 @@ foreach ($tabs as $tabId => [$list, $type]):
                         class="btn btn-success fw-bold">
                   <i class="bi bi-check-circle me-2"></i>Accept Booking
                 </button>
-                <button type="submit" name="action" value="cancel"
-                        class="btn btn-danger fw-bold"
-                        onclick="return confirm('Reject this booking?')">
+                <button type="button" class="btn btn-danger fw-bold"
+                        onclick="confirmRejectBooking(this)">
                   <i class="bi bi-x-circle me-2"></i>Reject Booking
                 </button>
               </div>
@@ -438,6 +437,58 @@ function confirmAction(type, id) {
     btn.href        = c.url;
     new bootstrap.Modal(document.getElementById('confirmModal')).show();
 }
+</script>
+
+<!-- Reject Booking Confirmation Modal -->
+<div class="modal fade" id="rejectBookingModal" tabindex="-1" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#dc2626,#ef4444);padding:28px 24px 20px;text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 12px;font-size:2rem;color:white">
+          <i class="bi bi-x-circle-fill"></i>
+        </div>
+        <h5 style="color:white;font-weight:800;margin:0;font-size:1.15rem">Reject Booking</h5>
+      </div>
+      <div style="padding:24px 28px;text-align:center">
+        <p style="color:#374151;font-size:.95rem;margin-bottom:14px">
+          Are you sure you want to <strong>reject this booking</strong>?
+        </p>
+        <p style="color:#6b7280;font-size:.82rem;margin-bottom:24px">
+          <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+          The client will be notified that their booking was rejected.
+        </p>
+        <div class="d-flex gap-3">
+          <button type="button" class="btn btn-outline-secondary flex-fill fw-semibold"
+                  data-bs-dismiss="modal" style="border-radius:10px;padding:11px">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+          <button type="button" id="rejectBookingConfirmBtn"
+                  class="btn flex-fill fw-bold text-white"
+                  style="background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:10px;padding:11px">
+            <i class="bi bi-x-circle me-1"></i>Yes, Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _rejectBookingBtn = null;
+function confirmRejectBooking(btn) {
+  _rejectBookingBtn = btn;
+  new bootstrap.Modal(document.getElementById('rejectBookingModal')).show();
+}
+document.getElementById('rejectBookingConfirmBtn').addEventListener('click', function() {
+  if (_rejectBookingBtn) {
+    _rejectBookingBtn.type = 'submit';
+    _rejectBookingBtn.name = 'action';
+    _rejectBookingBtn.value = 'cancel';
+    _rejectBookingBtn.closest('form').submit();
+  }
+});
 </script>
 
 <?php require_once __DIR__ . '/../includes/admin_footer.php'; ?>

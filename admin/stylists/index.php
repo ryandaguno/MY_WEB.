@@ -107,11 +107,10 @@ foreach ($schedRows as $r) {
            class="btn btn-sm btn-outline-secondary flex-fill">
           <i class="bi bi-calendar-week me-1"></i>Schedule
         </a>
-        <a href="delete.php?id=<?= $st['id'] ?>"
-           class="btn btn-sm btn-outline-danger"
-           onclick="return confirm('Delete <?= htmlspecialchars($st['name'], ENT_QUOTES) ?>? This cannot be undone.')">
+        <button type="button" class="btn btn-sm btn-outline-danger"
+                onclick="confirmDeleteStylist(<?= $st['id'] ?>, '<?= htmlspecialchars($st['name'], ENT_QUOTES) ?>')">
           <i class="bi bi-trash"></i>
-        </a>
+        </button>
       </div>
 
     </div>
@@ -119,5 +118,47 @@ foreach ($schedRows as $r) {
   <?php endforeach; ?>
 </div>
 <?php endif; ?>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteStylistModal" tabindex="-1" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#dc2626,#ef4444);padding:28px 24px 20px;text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 12px;font-size:2rem;color:white">
+          <i class="bi bi-person-dash-fill"></i>
+        </div>
+        <h5 style="color:white;font-weight:800;margin:0;font-size:1.15rem">Delete Stylist</h5>
+      </div>
+      <div style="padding:24px 28px;text-align:center">
+        <p style="color:#374151;font-size:.95rem;margin-bottom:6px">Are you sure you want to delete</p>
+        <p style="color:#111827;font-weight:800;font-size:1.05rem;margin-bottom:14px" id="deleteStylistName"></p>
+        <p style="color:#6b7280;font-size:.82rem;margin-bottom:24px">
+          <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+          This <strong>cannot be undone</strong>. All schedules for this stylist will also be removed.
+        </p>
+        <div class="d-flex gap-3">
+          <button type="button" class="btn btn-outline-secondary flex-fill fw-semibold"
+                  data-bs-dismiss="modal" style="border-radius:10px;padding:11px">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+          <a id="deleteStylistBtn" href="#" class="btn flex-fill fw-bold text-white"
+             style="background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:10px;padding:11px">
+            <i class="bi bi-trash3 me-1"></i>Yes, Delete
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmDeleteStylist(id, name) {
+  document.getElementById('deleteStylistName').textContent = '"' + name + '"';
+  document.getElementById('deleteStylistBtn').href = 'delete.php?id=' + id;
+  new bootstrap.Modal(document.getElementById('deleteStylistModal')).show();
+}
+</script>
 
 <?php require_once __DIR__ . '/../includes/admin_footer.php'; ?>
