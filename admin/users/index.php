@@ -1,13 +1,4 @@
 ﻿<?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-register_shutdown_function(function(){
-    $e = error_get_last();
-    if($e && in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR])){
-        ob_clean();
-        die("<pre style='background:red;color:white;padding:20px'>FATAL: {$e['message']}\nFile: {$e['file']}\nLine: {$e['line']}</pre>");
-    }
-});
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../modules/SessionGuard.php';
 SessionGuard::requireAdmin();
