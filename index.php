@@ -39,8 +39,8 @@ if (isset($mimeTypes[$ext])) {
 if ($uri !== '/' && $uri !== '/index.php') {
     $filePath = __DIR__ . $uri;
     if (file_exists($filePath) && is_file($filePath) && $ext === 'php') {
-        require $filePath;
-        return;
+        // Let PHP built-in server handle it natively (preserves __FILE__, headers, etc.)
+        return false;
     }
 }
 

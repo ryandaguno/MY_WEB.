@@ -3,36 +3,10 @@ require_once __DIR__ . '/../config/config.php';
 
 class SessionGuard {
 
-    /** Call once at the very top of every page to start DB-backed sessions */
     public static function start(): void {
-        if (session_status() !== PHP_SESSION_NONE) return;
-
-        // Extend session lifetime so it survives on Railway
-        ini_set('session.gc_maxlifetime', 86400);
-        ini_set('session.cookie_lifetime', 86400);
-        ini_set('session.cookie_httponly', 1);
-        ini_set('session.cookie_samesite', 'Lax');
-        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-            ini_set('session.cookie_secure', 1);
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
-        // Store sessions in /tmp which persists within a single container instance
-        // and use a fixed save path to avoid Railway's default temp dir issues
-        $savePath = sys_get_temp_dir() . '/selah_sessions';
-        if (!is_dir($savePath)) {
-            @mkdir($savePath, 0700, true);
-        }
-        if (is_dir($savePath) && is_writable($savePath)) {
-            session_save_path($savePath);
-        }
-
-        session_start();
-    }
-
-    // ----------------------------------------------------------------
-    // DB-BACKED SESSION HANDLER (disabled - caused blank pages)
-    // ----------------------------------------------------------------
-    private static function registerDbHandler(): void {
-        // Intentionally empty - file sessions work fine
     }
 
     public static function requireClient(): void {
