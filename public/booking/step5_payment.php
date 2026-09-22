@@ -1,6 +1,7 @@
 <?php
-$pageTitle = 'Step 5: Confirm Booking';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../modules/BookingManager.php';
@@ -97,6 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $csrfToken = SessionGuard::generateCsrfToken();
+$pageTitle = 'Step 5: Confirm Booking';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 <style>
 .s5-page  { background:#e8eaed; min-height:calc(100vh - 56px); padding:32px 16px 60px; font-family:'Segoe UI',Arial,sans-serif; }

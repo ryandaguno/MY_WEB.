@@ -1,6 +1,7 @@
 <?php
-$pageTitle = 'Step 2: Pick Stylist';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../modules/BookingManager.php';
@@ -19,9 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: ' . BASE_URL . '/public/booking/step3_datetime.php'); exit;
 }
 
-$selected   = $_SESSION['booking']['stylist_id'] ?? '';
-$csrfToken  = SessionGuard::generateCsrfToken();
-?>
+$selected  = $_SESSION['booking']['stylist_id'] ?? '';
+$csrfToken = SessionGuard::generateCsrfToken();
+$pageTitle = 'Step 2: Pick Stylist';
+require_once __DIR__ . '/../../includes/header.php';
 <div class="container my-4">
   <div class="booking-steps">
     <?php foreach ([1=>'Service',2=>'Stylist',3=>'Date & Time',4=>'Details',5=>'Confirm'] as $n => $label): ?>

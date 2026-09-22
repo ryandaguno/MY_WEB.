@@ -1,24 +1,27 @@
 <?php
-$pageTitle = 'Step 4: Add Details';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
+
 if (empty($_SESSION['booking']['schedule_id'])) {
     header('Location: ' . BASE_URL . '/public/booking/step3_datetime.php'); exit;
 }
-
-require_once __DIR__ . '/../../config/db.php';
-$db = getDB();
-$stmt = $db->prepare('SELECT * FROM clients WHERE id = ?');
-$stmt->execute([$_SESSION['client_id']]);
-$client = $stmt->fetch();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SessionGuard::validateCsrfToken($_POST['csrf_token'] ?? '')) die('Session expired.');
     $_SESSION['booking']['notes'] = htmlspecialchars(trim($_POST['notes'] ?? ''), ENT_QUOTES, 'UTF-8');
     header('Location: ' . BASE_URL . '/public/booking/step5_payment.php'); exit;
 }
+
+require_once __DIR__ . '/../../config/db.php';
+$db = getDB();
+$stmt = $db->prepare('SELECT * FROM clients WHERE id = ?');
+$stmt->execute([$_SESSION['client_id']]);
+$client    = $stmt->fetch();
 $csrfToken = SessionGuard::generateCsrfToken();
-?>
+$pageTitle = 'Step 4: Add Details';
+require_once __DIR__ . '/../../includes/header.php';
 <div class="container my-4" style="max-width:600px">
   <div class="booking-steps">
     <?php foreach ([1=>'Service',2=>'Stylist',3=>'Date & Time',4=>'Details',5=>'Confirm'] as $n => $lbl): ?>

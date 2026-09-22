@@ -1,11 +1,10 @@
 <?php
-/* ============================================================
-   Step 3 – Select Date & Time
-   Backend logic UNCHANGED. Frontend rebuilt to match Step 1/2.
-   ============================================================ */
-$pageTitle = 'Step 3: Select Date & Time';
-require_once __DIR__ . '/../../includes/header.php';
+/* Step 3 – Select Date & Time */
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
+
 if (empty($_SESSION['booking']['service_id'])) {
     header('Location: ' . BASE_URL . '/public/booking/step1_service.php'); exit;
 }
@@ -29,7 +28,8 @@ $selected  = $_SESSION['booking']['schedule_id'] ?? 0;
 $csrfToken = SessionGuard::generateCsrfToken();
 $today     = date('Y-m-d');
 $maxDate   = date('Y-m-d', strtotime('+60 days'));
-?>
+$pageTitle = 'Step 3: Select Date & Time';
+require_once __DIR__ . '/../../includes/header.php';
 <style>
 .s3-page  { background:#e8eaed; min-height:calc(100vh - 56px); padding:32px 16px 60px; font-family:'Segoe UI',Arial,sans-serif; }
 .s3-card  { background:#f5f5f5; border-radius:14px; max-width:820px; margin:0 auto; padding:28px 28px 36px; box-shadow:0 4px 24px rgba(0,0,0,.10); }

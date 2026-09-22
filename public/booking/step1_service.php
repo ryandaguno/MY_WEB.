@@ -1,16 +1,11 @@
 <?php
-$pageTitle = 'Step 1: Choose Service';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
 require_once __DIR__ . '/../../config/db.php';
 
-$db = getDB();
-
-// Pre-select from URL param (from services page)
-if (isset($_GET['service_id']) && is_numeric($_GET['service_id'])) {
-    $_SESSION['booking']['service_id'] = (int)$_GET['service_id'];
-}
-
+// Handle POST BEFORE any output
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SessionGuard::validateCsrfToken($_POST['csrf_token'] ?? '')) die('Session expired.');
     if (!empty($_POST['service_id'])) {
@@ -19,13 +14,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Pre-select from URL param (from services page)
+if (isset($_GET['service_id']) && is_numeric($_GET['service_id'])) {
+    $_SESSION['booking']['service_id'] = (int)$_GET['service_id'];
+}
+
+$db = getDB();
 $categories = $db->query('SELECT DISTINCT category FROM services WHERE is_active = 1 ORDER BY category')->fetchAll(PDO::FETCH_COLUMN);
 $services   = $db->query('SELECT * FROM services WHERE is_active = 1 ORDER BY category, name')->fetchAll();
 $grouped    = [];
 foreach ($services as $svc) { $grouped[$svc['category']][] = $svc; }
 $selectedId = $_SESSION['booking']['service_id'] ?? 0;
 $csrfToken  = SessionGuard::generateCsrfToken();
-?>
+
+$pageTitle = 'Step 1: Choose Service';
+require_once __DIR__ . '/../../includes/header.php';
 <div class="container my-4">
   <!-- Progress -->
   <div class="booking-steps">
