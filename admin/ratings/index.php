@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::requireAdmin();
 $pageTitle = 'Ratings & Feedback';
 require_once __DIR__ . '/../includes/admin_header.php';
 require_once __DIR__ . '/../../config/db.php';

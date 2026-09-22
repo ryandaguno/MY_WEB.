@@ -1,10 +1,10 @@
 <?php
 /* ============================================================
    Admin – Stylist Weekly Recurring Schedule
-   One schedule per stylist, repeats every week automatically.
-   No manual daily slot creation required.
-   Supports optional break window (e.g. 12:00–13:00).
    ============================================================ */
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../modules/SessionGuard.php';
+SessionGuard::requireAdmin();
 if (function_exists('opcache_invalidate')) opcache_invalidate(__FILE__, true);
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Pragma: no-cache');
