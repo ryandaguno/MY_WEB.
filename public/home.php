@@ -1279,8 +1279,13 @@ $errorMsg   = SessionGuard::getFlash('error');
     <p class="section-subheading">Find us at the heart of Midsayap, North Cotabato</p>
 
     <div class="map-iframe-container">
+      <!--
+        Embed centered on Poblacion 8 Villarica, Midsayap with a single pin.
+        Uses the static map embed with a marker at exact coordinates.
+        lat=7.1972, lng=124.5285 — Poblacion 8, Villarica, Midsayap
+      -->
       <iframe
-        src="https://maps.google.com/maps?q=Poblacion+8+Villarica+Midsayap+North+Cotabato+Philippines&output=embed"
+        src="https://maps.google.com/maps?q=7.1972,124.5285&z=17&output=embed&hl=en&markers=color:red%7Clabel:S%7C7.1972,124.5285"
         allowfullscreen
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
@@ -1289,12 +1294,12 @@ $errorMsg   = SessionGuard::getFlash('error');
     </div>
 
     <div class="map-buttons">
-      <a href="https://maps.google.com/?q=Poblacion+8+Villarica+Midsayap+North+Cotabato+Philippines"
+      <a href="https://maps.google.com/?q=7.1972,124.5285&z=17"
          target="_blank" rel="noopener noreferrer" class="btn-map">
         <i class="bi bi-map-fill"></i>
         OPEN IN GOOGLE MAPS
       </a>
-      <a href="https://maps.apple.com/?q=Poblacion+8+Villarica+Midsayap+North+Cotabato+Philippines"
+      <a href="https://maps.apple.com/?ll=7.1972,124.5285&z=17&q=Selah+Aesthetics"
          target="_blank" rel="noopener noreferrer" class="btn-map" style="background:#1c7a74">
         <i class="bi bi-map"></i>
         OPEN IN APPLE MAPS
