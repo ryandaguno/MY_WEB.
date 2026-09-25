@@ -340,9 +340,6 @@ foreach ($tabs as $tabId => [$list, $type]):
              style="max-height:500px; object-fit:contain; width:100%">
       </div>
       <div class="modal-footer">
-        <a id="bkReceiptNewTab" href="#" target="_blank" class="btn btn-sm btn-outline-secondary">
-          <i class="bi bi-box-arrow-up-right me-1"></i>Open in New Tab
-        </a>
         <button type="button" class="btn btn-sm btn-sa-primary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
@@ -375,8 +372,7 @@ function openBookingDetail(data) {
 }
 
 function openReceiptOnly(src, clientName) {
-    document.getElementById('bkReceiptImg').src      = src;
-    document.getElementById('bkReceiptNewTab').href  = src;
+    document.getElementById('bkReceiptImg').src = src;
     new bootstrap.Modal(document.getElementById('bkReceiptModal')).show();
 }
 </script>
