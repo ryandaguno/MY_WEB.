@@ -1280,7 +1280,7 @@ $errorMsg   = SessionGuard::getFlash('error');
 
     <div class="map-iframe-container">
       <iframe
-        src="https://maps.google.com/maps?q=7.2321886,124.5238848&z=18&output=embed&hl=en"
+        src="https://maps.google.com/maps?q=Selah+Aesthetics+Midsayap+North+Cotabato+Philippines&z=18&output=embed&hl=en"
         allowfullscreen
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
