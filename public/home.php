@@ -1278,7 +1278,7 @@ $errorMsg   = SessionGuard::getFlash('error');
     <h2 class="section-heading">GET IN TOUCH</h2>
     <p class="section-subheading">Poblacion 8, Villarica, Midsayap, North Cotabato, Philippines</p>
 
-    <!-- Leaflet map — no API key needed, shows exact pin with popup info -->
+    <!-- Leaflet map — satellite view, exact pin with popup info -->
     <div class="map-iframe-container" style="position:relative">
       <div id="salon-map" style="width:100%;height:380px;border-radius:14px;overflow:hidden;"></div>
     </div>
@@ -1287,43 +1287,72 @@ $errorMsg   = SessionGuard::getFlash('error');
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
     (function(){
-      var map = L.map('salon-map', { scrollWheelZoom: false }).setView([7.2321886, 124.5238848], 18);
+      var LAT = 7.2321886, LNG = 124.5238848;
+      var map = L.map('salon-map', { scrollWheelZoom: false }).setView([LAT, LNG], 18);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
+      // Satellite/hybrid tiles from Esri (free, no API key)
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA'
+        }
+      ).addTo(map);
 
-      // Custom purple marker icon
+      // Road labels overlay on top of satellite
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        { maxZoom: 19, opacity: 0.7 }
+      ).addTo(map);
+
+      // Custom teardrop pin matching brand color
       var icon = L.divIcon({
-        html: '<div style="background:#6B2D8B;width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>',
-        iconSize:   [36, 36],
-        iconAnchor: [18, 36],
-        popupAnchor:[0, -38],
+        html: '<div style="width:32px;height:32px;background:#6B2D8B;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.5)"><div style="width:10px;height:10px;background:#fff;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg)"></div></div>',
+        iconSize:   [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor:[0, -36],
         className:  ''
       });
 
-      L.marker([7.2321886, 124.5238848], { icon: icon })
+      L.marker([LAT, LNG], { icon: icon })
         .addTo(map)
         .bindPopup(
-          '<div style="font-family:Poppins,sans-serif;min-width:200px">' +
-          '<div style="font-weight:800;font-size:.95rem;color:#6B2D8B;margin-bottom:4px">' +
-          '<i class="bi bi-scissors me-1"></i>Selah Aesthetics</div>' +
-          '<div style="font-size:.8rem;color:#444;margin-bottom:4px">' +
-          '<i class="bi bi-geo-alt me-1" style="color:#0D9488"></i>' +
-          'Poblacion 8, Villarica<br>Midsayap, North Cotabato</div>' +
-          '<div style="font-size:.8rem;color:#444;margin-bottom:4px">' +
-          '<i class="bi bi-telephone me-1" style="color:#0D9488"></i>09635711520</div>' +
-          '<a href="https://maps.google.com/?q=7.2321886,124.5238848" target="_blank" ' +
-          'style="display:inline-block;margin-top:6px;background:#6B2D8B;color:#fff;' +
-          'border-radius:6px;padding:4px 12px;font-size:.75rem;text-decoration:none;font-weight:700">' +
-          'Open in Google Maps</a>' +
+          '<div style="font-family:Poppins,sans-serif;min-width:210px;padding:4px 2px">' +
+          '<div style="font-weight:800;font-size:1rem;color:#6B2D8B;margin-bottom:6px;display:flex;align-items:center;gap:6px">' +
+          '<span style="font-size:1.1rem">✂️</span> Selah Aesthetics</div>' +
+          '<div style="font-size:.82rem;color:#333;margin-bottom:4px;display:flex;gap:6px">' +
+          '<span style="color:#0D9488;font-size:.9rem">📍</span>' +
+          '<span>Poblacion 8, Villarica<br>Midsayap, North Cotabato</span></div>' +
+          '<div style="font-size:.82rem;color:#333;margin-bottom:10px;display:flex;gap:6px">' +
+          '<span style="color:#0D9488;font-size:.9rem">📞</span>' +
+          '<span>09635711520</span></div>' +
+          '<a href="https://maps.google.com/?q=' + LAT + ',' + LNG + '" target="_blank" ' +
+          'style="display:block;text-align:center;background:linear-gradient(135deg,#6B2D8B,#0D9488);color:#fff;' +
+          'border-radius:8px;padding:7px 14px;font-size:.78rem;text-decoration:none;font-weight:700;letter-spacing:.5px">' +
+          '🗺️ Open in Google Maps</a>' +
           '</div>',
-          { maxWidth: 240 }
+          { maxWidth: 250, className: 'salon-popup' }
         )
         .openPopup();
+
+      // Pulse animation on the pin area
+      L.circle([LAT, LNG], {
+        radius: 15,
+        color: '#6B2D8B',
+        fillColor: '#9b4dca',
+        fillOpacity: 0.25,
+        weight: 2
+      }).addTo(map);
     })();
     </script>
+    <style>
+    .salon-popup .leaflet-popup-content-wrapper {
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(107,45,139,.25);
+      border: none;
+    }
+    .salon-popup .leaflet-popup-tip { background: #fff; }
+    </style>
 
     <div class="map-buttons">
       <a href="https://maps.google.com/?q=7.2321886,124.5238848&z=18"
