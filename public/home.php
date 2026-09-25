@@ -1276,7 +1276,7 @@ $errorMsg   = SessionGuard::getFlash('error');
 <section id="about" class="map-section">
   <div class="map-wrapper">
     <h2 class="section-heading">GET IN TOUCH</h2>
-    <p class="section-subheading">Find us at the heart of Midsayap, North Cotabato</p>
+    <p class="section-subheading">Poblacion 8, Villarica, Midsayap, North Cotabato, Philippines</p>
 
     <div class="map-iframe-container">
       <iframe
