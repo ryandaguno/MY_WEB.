@@ -29,10 +29,12 @@ class PaymentHandler {
         // Add receipt_data column for DB-stored image (survives Railway restarts)
         try {
             $this->db->exec(
-                "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS receipt_data MEDIUMBLOB NULL"
+                "ALTER TABLE transactions ADD COLUMN receipt_data MEDIUMBLOB NULL"
             );
+        } catch (PDOException $e) { /* already exists */ }
+        try {
             $this->db->exec(
-                "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS receipt_mime VARCHAR(50) NULL"
+                "ALTER TABLE transactions ADD COLUMN receipt_mime VARCHAR(50) NULL"
             );
         } catch (PDOException $e) { /* already exists */ }
     }
@@ -73,25 +75,36 @@ class PaymentHandler {
         $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $filename = 'gcash_' . $bookingId . '_' . uniqid() . '.' . $ext;
         $destPath = UPLOAD_PATH . $filename;
+
+        // Ensure upload directory exists
+        if (!is_dir(UPLOAD_PATH)) {
+            @mkdir(UPLOAD_PATH, 0777, true);
+        }
+
         $savedToDisk = @move_uploaded_file($file['tmp_name'], $destPath);
 
         // Read image binary data to store in DB (survives Railway restarts)
         $imageData = null;
         $imageMime = null;
+
         if ($savedToDisk && file_exists($destPath)) {
             $imageData = file_get_contents($destPath);
-        } elseif (file_exists($file['tmp_name'])) {
-            // tmp_name still available (file wasn't moved)
-            $imageData = file_get_contents($file['tmp_name']);
+        } else {
+            // tmp_name is still readable if move failed
+            $tmpPath = $file['tmp_name'] ?? '';
+            if ($tmpPath && file_exists($tmpPath)) {
+                $imageData = file_get_contents($tmpPath);
+            }
         }
+
         if ($imageData) {
             $finfo     = finfo_open(FILEINFO_MIME_TYPE);
             $imageMime = finfo_buffer($finfo, $imageData);
             finfo_close($finfo);
         }
 
-        if (!$savedToDisk && !$imageData) {
-            return ['success' => false, 'errors' => ['File could not be saved. Please try again.']];
+        if (!$imageData) {
+            return ['success' => false, 'errors' => ['Could not read the uploaded file. Please try again.']];
         }
 
         // Fetch downpayment amount from booking
