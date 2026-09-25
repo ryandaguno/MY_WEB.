@@ -25,6 +25,16 @@ class PaymentHandler {
                 ) NOT NULL DEFAULT 'Pending Verification'
             ");
         } catch (PDOException $e) { /* already correct */ }
+
+        // Add receipt_data column for DB-stored image (survives Railway restarts)
+        try {
+            $this->db->exec(
+                "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS receipt_data MEDIUMBLOB NULL"
+            );
+            $this->db->exec(
+                "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS receipt_mime VARCHAR(50) NULL"
+            );
+        } catch (PDOException $e) { /* already exists */ }
     }
 
     // ----------------------------------------------------------------
@@ -59,12 +69,28 @@ class PaymentHandler {
             return ['success' => false, 'errors' => ['A payment submission for this booking already exists.']];
         }
 
-        // Save file
+        // Save file to disk (best effort — may not survive Railway restarts)
         $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $filename = 'gcash_' . $bookingId . '_' . uniqid() . '.' . $ext;
         $destPath = UPLOAD_PATH . $filename;
+        $savedToDisk = @move_uploaded_file($file['tmp_name'], $destPath);
 
-        if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+        // Read image binary data to store in DB (survives Railway restarts)
+        $imageData = null;
+        $imageMime = null;
+        if ($savedToDisk && file_exists($destPath)) {
+            $imageData = file_get_contents($destPath);
+        } elseif (file_exists($file['tmp_name'])) {
+            // tmp_name still available (file wasn't moved)
+            $imageData = file_get_contents($file['tmp_name']);
+        }
+        if ($imageData) {
+            $finfo     = finfo_open(FILEINFO_MIME_TYPE);
+            $imageMime = finfo_buffer($finfo, $imageData);
+            finfo_close($finfo);
+        }
+
+        if (!$savedToDisk && !$imageData) {
             return ['success' => false, 'errors' => ['File could not be saved. Please try again.']];
         }
 
@@ -80,14 +106,16 @@ class PaymentHandler {
         // Booking status stays "Pending" — never auto-confirmed
         $stmt = $this->db->prepare(
             "INSERT INTO transactions
-                (booking_id, client_id, payment_method, amount, status, receipt_image)
-             VALUES (?, ?, 'GCash', ?, 'Pending Verification', ?)"
+                (booking_id, client_id, payment_method, amount, status, receipt_image, receipt_data, receipt_mime)
+             VALUES (?, ?, 'GCash', ?, 'Pending Verification', ?, ?, ?)"
         );
         $stmt->execute([
             $bookingId,
             $booking['client_id'],
             $booking['downpayment_amount'],
-            $filename,
+            $savedToDisk ? $filename : null,
+            $imageData,
+            $imageMime,
         ]);
 
         return ['success' => true, 'transaction_id' => (int)$this->db->lastInsertId()];
