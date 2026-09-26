@@ -67,6 +67,27 @@ require_once __DIR__ . '/../../includes/header.php';
 }
 .s3-slot-btn:hover   { border-color:#2ecc40; background:#f0fff0; }
 .s3-slot-btn.selected { background:#2ecc40; border-color:#27ae36; color:#fff; }
+.s3-slot-booked {
+  background:#fee2e2; border-color:#ef4444; color:#ef4444;
+  cursor:not-allowed; opacity:.85;
+  position:relative;
+}
+.s3-slot-booked::after {
+  content:'Not Available';
+  display:none;
+  position:absolute;
+  bottom:calc(100% + 6px);
+  left:50%;
+  transform:translateX(-50%);
+  background:#1f2937;
+  color:#fff;
+  font-size:.7rem;
+  padding:3px 8px;
+  border-radius:6px;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.s3-slot-booked:hover::after { display:block; }
 .s3-slot-placeholder { color:#888; font-size:.85rem; font-style:italic; }
 
 @media (max-width:600px) {
@@ -165,17 +186,26 @@ document.getElementById('datePicker').addEventListener('change', function () {
       slots.forEach(slot => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 's3-slot-btn';
-        btn.textContent = formatTime(slot.start_time);
-        btn.dataset.id   = slot.id;
-        btn.dataset.time = slot.start_time;
-        btn.addEventListener('click', function () {
-          document.querySelectorAll('.s3-slot-btn').forEach(b => b.classList.remove('selected'));
-          this.classList.add('selected');
-          document.getElementById('selectedScheduleId').value = slot.id;
-          document.getElementById('selectedTime').value = slot.start_time;
-          document.getElementById('nextBtn').disabled = false;
-        });
+
+        if (slot.available === false) {
+          // Booked — show red, not clickable
+          btn.className = 's3-slot-btn s3-slot-booked';
+          btn.textContent = formatTime(slot.start_time);
+          btn.disabled = true;
+          btn.title = 'Not available — already booked';
+        } else {
+          btn.className = 's3-slot-btn';
+          btn.textContent = formatTime(slot.start_time);
+          btn.dataset.id   = slot.id;
+          btn.dataset.time = slot.start_time;
+          btn.addEventListener('click', function () {
+            document.querySelectorAll('.s3-slot-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('selectedScheduleId').value = slot.id;
+            document.getElementById('selectedTime').value = slot.start_time;
+            document.getElementById('nextBtn').disabled = false;
+          });
+        }
         wrap.appendChild(btn);
       });
       container.appendChild(wrap);

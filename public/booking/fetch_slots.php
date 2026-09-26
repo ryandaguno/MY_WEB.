@@ -166,7 +166,7 @@ if ($stylistId > 0) {
         if (inBreak($ts, $durSecs, $breakStartTs, $breakEndTs)) continue;
         $startTime = date('H:i:s', $ts);
         $endTime   = date('H:i:s', $ts + $durSecs);
-        if (isset($bookedTimes[$startTime])) continue;
+        $isBooked  = isset($bookedTimes[$startTime]);
 
         $schedId = ensureSchedule($db, $stylistId, $date, $startTime, $endTime);
         $slots[] = [
@@ -175,6 +175,7 @@ if ($stylistId > 0) {
             'end_time'   => $endTime,
             'label'      => date('g:i A', $ts),
             'stylist_id' => $stylistId,
+            'available'  => !$isBooked,
         ];
     }
 
@@ -260,8 +261,47 @@ for ($ts = $salonOpenTs; $ts + $durSecs <= $salonCloseTs; $ts += $durSecs) {
         'end_time'   => $endTime,
         'label'      => date('g:i A', $ts),
         'stylist_id' => $freeStylistId,
+        'available'  => true,
     ];
 }
+
+// Also add fully-booked slots as unavailable so they show red
+for ($ts = $salonOpenTs; $ts + $durSecs <= $salonCloseTs; $ts += $durSecs) {
+    if ($ts <= $now + 300) continue;
+    $startTime = date('H:i:s', $ts);
+    // Check if this slot is already in the available list
+    $already = false;
+    foreach ($slots as $s) {
+        if ($s['start_time'] === $startTime) { $already = true; break; }
+    }
+    if ($already) continue;
+    // Check if ALL stylists are booked at this time
+    $allBooked = true;
+    foreach ($allStylists as $sid) {
+        $win = $stylistMeta[$sid] ?? null;
+        if ($win === null) continue;
+        if ($ts < $win['openTs'] || $ts + $durSecs > $win['closeTs']) continue;
+        if (inBreak($ts, $durSecs, $win['breakStartTs'], $win['breakEndTs'])) continue;
+        if (!isset($bookedByStylist[$sid][$startTime])) { $allBooked = false; break; }
+    }
+    if ($allBooked) {
+        // Show as unavailable (red) — use any stylist's schedule id
+        $anySid = $allStylists[0];
+        $endTime = date('H:i:s', $ts + $durSecs);
+        $schedId = ensureSchedule($db, $anySid, $date, $startTime, $endTime);
+        $slots[] = [
+            'id'         => $schedId,
+            'start_time' => $startTime,
+            'end_time'   => $endTime,
+            'label'      => date('g:i A', $ts),
+            'stylist_id' => $anySid,
+            'available'  => false,
+        ];
+    }
+}
+
+// Sort by start_time
+usort($slots, function($a, $b) { return strcmp($a['start_time'], $b['start_time']); });
 
 echo json_encode(['closed' => false, 'slots' => $slots]);
 
