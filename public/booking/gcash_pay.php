@@ -146,27 +146,11 @@ require_once __DIR__ . '/../../includes/header.php';
 
       <?php if (!empty(GCASH_QR_PATH)): ?>
       <div style="text-align:center;margin-bottom:16px">
-        <?php
-        $qrImagePath = __DIR__ . '/../../assets/images/gcash_qr.png';
-        if (file_exists($qrImagePath)): ?>
-          <img src="<?= BASE_URL ?>/assets/images/gcash_qr.png"
-               alt="GCash QR Code"
-               style="max-width:180px;border-radius:10px;border:2px solid #e0e0e0">
-          <div style="font-size:.75rem;color:#888;margin-top:4px">Scan to pay via GCash</div>
-        <?php else: ?>
-          <!-- No QR uploaded yet — show number prominently -->
-          <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:16px 20px;display:inline-block">
-            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#166534;margin-bottom:4px">
-              Send to GCash Number
-            </div>
-            <div style="font-size:1.6rem;font-weight:900;letter-spacing:3px;color:#005f2f">
-              <?= GCASH_NUMBER ?>
-            </div>
-          </div>
-          <div style="font-size:.75rem;color:#888;margin-top:8px">
-            <i class="bi bi-info-circle me-1"></i>QR code coming soon — use the number above to send payment
-          </div>
-        <?php endif; ?>
+        <img src="<?= BASE_URL ?>/assets/images/gcash_qr.png"
+             alt="GCash QR Code"
+             style="max-width:180px;border-radius:10px;border:2px solid #e0e0e0"
+             onerror="this.style.display='none'">
+        <div style="font-size:.75rem;color:#888;margin-top:4px">Scan to pay via GCash</div>
       </div>
       <?php endif; ?>
 
