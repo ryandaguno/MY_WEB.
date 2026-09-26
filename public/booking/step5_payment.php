@@ -47,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$paymentMethod) {
         $error = 'Please select a payment method (GCash or PayPal).';
     } elseif ($paymentMethod === 'gcash') {
-        // Must have a file uploaded
         if (empty($_FILES['receipt']['tmp_name']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
             $error = 'Please upload your GCash payment screenshot before confirming.';
         }
@@ -75,28 +74,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$error) {
-        $result = $bm->createBooking([
-            'client_id'   => $_SESSION['client_id'],
-            'service_id'  => (int)$bk['service_id'],
-            'stylist_id'  => $stylistId,
-            'schedule_id' => (int)$bk['schedule_id'],
-            'notes'       => $bk['notes'] ?? '',
-        ]);
+        if ($paymentMethod === 'gcash') {
+            // GCash: create booking + upload receipt together.
+            // If receipt upload fails, booking is immediately cancelled.
+            $result = $bm->createBooking([
+                'client_id'   => $_SESSION['client_id'],
+                'service_id'  => (int)$bk['service_id'],
+                'stylist_id'  => $stylistId,
+                'schedule_id' => (int)$bk['schedule_id'],
+                'notes'       => $bk['notes'] ?? '',
+            ]);
 
-        if (!$result['success']) {
-            if ($result['conflict'] ?? false) {
-                SessionGuard::flashMessage('error', $result['message']);
-                header('Location: ' . BASE_URL . '/public/booking/step3_datetime.php'); exit;
-            }
-            $error = $result['message'];
-        } else {
-            $bookingId = $result['booking_id'];
-            $_SESSION['booking']['booking_id'] = $bookingId;
-
-            if ($paymentMethod === 'gcash') {
+            if (!$result['success']) {
+                if ($result['conflict'] ?? false) {
+                    SessionGuard::flashMessage('error', $result['message']);
+                    header('Location: ' . BASE_URL . '/public/booking/step3_datetime.php'); exit;
+                }
+                $error = $result['message'];
+            } else {
+                $bookingId    = $result['booking_id'];
                 $uploadResult = $ph->uploadGCashReceipt($_FILES['receipt'] ?? [], $bookingId);
                 if (!$uploadResult['success']) {
-                    // Upload failed — cancel the booking so the slot is freed
+                    // Cancel booking immediately — slot freed, nothing saved
                     $db->prepare("UPDATE bookings SET status = 'Cancelled' WHERE id = ?")
                        ->execute([$bookingId]);
                     $db->prepare("UPDATE schedules SET is_available = 1 WHERE id = ?")
@@ -107,11 +106,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['gcash_success_booking_id'] = $bookingId;
                     header('Location: ' . BASE_URL . '/public/booking/gcash_success.php'); exit;
                 }
-            } elseif ($paymentMethod === 'paypal') {
-                $_SESSION['paypal_pending_booking_id'] = $bookingId;
-                unset($_SESSION['booking']);
-                header('Location: ' . BASE_URL . '/public/booking/paypal_pay.php?booking_id=' . $bookingId); exit;
             }
+
+        } elseif ($paymentMethod === 'paypal') {
+            // PayPal: do NOT create booking yet.
+            // Store booking details in session — booking only created after
+            // PayPal capture succeeds in paypal_capture.php.
+            $_SESSION['paypal_pending'] = [
+                'client_id'   => $_SESSION['client_id'],
+                'service_id'  => (int)$bk['service_id'],
+                'stylist_id'  => $stylistId,
+                'schedule_id' => (int)$bk['schedule_id'],
+                'notes'       => $bk['notes'] ?? '',
+                'downpayment' => $downpayment,
+            ];
+            unset($_SESSION['booking']);
+            header('Location: ' . BASE_URL . '/public/booking/paypal_pay.php'); exit;
         }
     }
 }
