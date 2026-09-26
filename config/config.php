@@ -2,6 +2,9 @@
 // Application Configuration
 // Reads from Railway environment variables in production, falls back to localhost for XAMPP
 
+// Set timezone to Philippines time — ensures all date/time operations are correct
+date_default_timezone_set('Asia/Manila');
+
 define('BASE_URL', getenv('BASE_URL') ?: 'http://localhost/selah-aesthetics-Backup');
 
 // Database — Railway injects these automatically when you add a MySQL service

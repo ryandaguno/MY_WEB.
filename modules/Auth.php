@@ -22,7 +22,7 @@ class Auth {
 
         // Auto-add is_approved column if not exists
         try {
-            $this->db->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS is_approved TINYINT(1) NOT NULL DEFAULT 0");
+            $this->db->exec("ALTER TABLE clients ADD COLUMN is_approved TINYINT(1) NOT NULL DEFAULT 0");
         } catch (PDOException $e) { /* already exists */ }
 
         $token   = bin2hex(random_bytes(32));

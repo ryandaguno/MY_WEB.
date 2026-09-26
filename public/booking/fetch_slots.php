@@ -316,12 +316,14 @@ function ensureWeeklyScheduleTable(PDO $db): void
     /* Add break columns to existing tables that predate this change */
     try {
         $db->exec("ALTER TABLE stylist_weekly_schedules
-                   ADD COLUMN IF NOT EXISTS break_start TIME NULL DEFAULT NULL
+                   ADD COLUMN break_start TIME NULL DEFAULT NULL
                    AFTER start_time");
+    } catch (PDOException $e) { /* column already exists */ }
+    try {
         $db->exec("ALTER TABLE stylist_weekly_schedules
-                   ADD COLUMN IF NOT EXISTS break_end TIME NULL DEFAULT NULL
+                   ADD COLUMN break_end TIME NULL DEFAULT NULL
                    AFTER break_start");
-    } catch (PDOException $e) { /* columns already exist */ }
+    } catch (PDOException $e) { /* column already exists */ }
 
     /* Seed default Mon–Sat 9AM–6PM, Sun OFF for any unseed stylist */
     $db->exec("

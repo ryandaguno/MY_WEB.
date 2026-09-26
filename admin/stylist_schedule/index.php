@@ -39,10 +39,12 @@ $db->exec("
 /* Add break columns to tables created before this version */
 try {
     $db->exec("ALTER TABLE stylist_weekly_schedules
-               ADD COLUMN IF NOT EXISTS break_start TIME NULL DEFAULT NULL AFTER start_time");
+               ADD COLUMN break_start TIME NULL DEFAULT NULL AFTER start_time");
+} catch (PDOException $e) { /* already exists */ }
+try {
     $db->exec("ALTER TABLE stylist_weekly_schedules
-               ADD COLUMN IF NOT EXISTS break_end TIME NULL DEFAULT NULL AFTER break_start");
-} catch (PDOException $e) { /* already exist */ }
+               ADD COLUMN break_end TIME NULL DEFAULT NULL AFTER break_start");
+} catch (PDOException $e) { /* already exists */ }
 
 /* Seed default rows for any active stylist that has none */
 $db->exec("

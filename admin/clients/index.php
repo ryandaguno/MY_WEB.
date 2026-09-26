@@ -9,8 +9,12 @@ $db = getDB();
 
 // Auto-add columns if not exists
 try {
-    $db->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS is_approved TINYINT(1) NOT NULL DEFAULT 0");
-    $db->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS account_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending'");
+    $db->exec("ALTER TABLE clients ADD COLUMN is_approved TINYINT(1) NOT NULL DEFAULT 0");
+} catch (PDOException $e) {}
+try {
+    $db->exec("ALTER TABLE clients ADD COLUMN account_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending'");
+} catch (PDOException $e) {}
+try {
     // Sync account_status from existing is_approved/is_verified values
     $db->exec("UPDATE clients SET account_status='approved' WHERE is_approved=1 AND account_status='pending'");
     $db->exec("UPDATE clients SET is_approved = 1 WHERE is_verified = 1 AND is_approved = 0 AND created_at < NOW() - INTERVAL 1 MINUTE AND account_status != 'rejected'");
