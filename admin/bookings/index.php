@@ -199,8 +199,10 @@ foreach ($tabs as $tabId => [$list, $type]):
             <div class="d-flex justify-content-center gap-1">
               <button class="btn btn-sm btn-danger"
                       onclick="confirmAction('cancel', <?= $b['id'] ?>)">Cancel</button>
-              <a href="../../public/booking_detail.php?id=<?= $b['id'] ?>"
-                 class="btn btn-sm btn-outline-secondary" target="_blank">View</a>
+              <a href="<?= BASE_URL ?>/admin/bookings/detail.php?id=<?= $b['id'] ?>"
+                 class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-eye me-1"></i>View
+              </a>
             </div>
           <?php else: ?>
             <div class="d-flex justify-content-center">

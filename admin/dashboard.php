@@ -284,8 +284,8 @@ $csrfToken = SessionGuard::generateCsrfToken();
               </span>
             </td>
             <td>
-              <a href="<?= BASE_URL ?>/public/booking_detail.php?id=<?= $b['id'] ?>"
-                 class="btn btn-sm btn-outline-secondary" target="_blank">
+              <a href="<?= BASE_URL ?>/admin/bookings/detail.php?id=<?= $b['id'] ?>"
+                 class="btn btn-sm btn-outline-secondary">
                 <i class="bi bi-eye"></i>
               </a>
             </td>
