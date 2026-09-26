@@ -41,22 +41,36 @@ $error       = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SessionGuard::validateCsrfToken($_POST['csrf_token'] ?? '')) die('Session expired.');
 
-    $bm        = new BookingManager();
-    $stylistId = ($bk['stylist_id'] === 'any') ? 0 : (int)$bk['stylist_id'];
+    $paymentMethod = $_POST['payment_method'] ?? '';
 
-    if ($stylistId === 0) {
-        $anyStmt = $db->prepare(
-            'SELECT st.id FROM stylists st
-             JOIN schedules sc ON sc.stylist_id = st.id
-             WHERE sc.id = ? AND st.is_active = 1
-             AND sc.id NOT IN (SELECT schedule_id FROM bookings WHERE status IN (\'Pending\',\'Accepted\'))
-             LIMIT 1'
-        );
-        $anyStmt->execute([(int)$bk['schedule_id']]);
-        $anyRow    = $anyStmt->fetch();
-        $stylistId = $anyRow ? (int)$anyRow['id'] : 0;
-        if (!$stylistId) {
-            $error = 'No stylists available for the selected time slot. Please choose another slot.';
+    // ── Validate BEFORE creating booking ──────────────────────────
+    if (!$paymentMethod) {
+        $error = 'Please select a payment method (GCash or PayPal).';
+    } elseif ($paymentMethod === 'gcash') {
+        // Must have a file uploaded
+        if (empty($_FILES['receipt']['tmp_name']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
+            $error = 'Please upload your GCash payment screenshot before confirming.';
+        }
+    }
+
+    if (!$error) {
+        $bm        = new BookingManager();
+        $stylistId = ($bk['stylist_id'] === 'any') ? 0 : (int)$bk['stylist_id'];
+
+        if ($stylistId === 0) {
+            $anyStmt = $db->prepare(
+                'SELECT st.id FROM stylists st
+                 JOIN schedules sc ON sc.stylist_id = st.id
+                 WHERE sc.id = ? AND st.is_active = 1
+                 AND sc.id NOT IN (SELECT schedule_id FROM bookings WHERE status IN (\'Pending\',\'Accepted\'))
+                 LIMIT 1'
+            );
+            $anyStmt->execute([(int)$bk['schedule_id']]);
+            $anyRow    = $anyStmt->fetch();
+            $stylistId = $anyRow ? (int)$anyRow['id'] : 0;
+            if (!$stylistId) {
+                $error = 'No stylists available for the selected time slot. Please choose another slot.';
+            }
         }
     }
 
@@ -79,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $bookingId = $result['booking_id'];
             $_SESSION['booking']['booking_id'] = $bookingId;
 
-            if (($_POST['payment_method'] ?? '') === 'gcash') {
+            if ($paymentMethod === 'gcash') {
                 $uploadResult = $ph->uploadGCashReceipt($_FILES['receipt'] ?? [], $bookingId);
                 if (!$uploadResult['success']) {
                     // Upload failed — cancel the booking so the slot is freed
@@ -93,14 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['gcash_success_booking_id'] = $bookingId;
                     header('Location: ' . BASE_URL . '/public/booking/gcash_success.php'); exit;
                 }
-            } elseif (($_POST['payment_method'] ?? '') === 'paypal') {
-                // Keep booking session alive in case user needs to come back
-                // Don't unset until PayPal confirms
+            } elseif ($paymentMethod === 'paypal') {
                 $_SESSION['paypal_pending_booking_id'] = $bookingId;
                 unset($_SESSION['booking']);
                 header('Location: ' . BASE_URL . '/public/booking/paypal_pay.php?booking_id=' . $bookingId); exit;
-            } else {
-                $error = 'Please select a payment method.';
             }
         }
     }
@@ -205,7 +215,7 @@ require_once __DIR__ . '/../../includes/header.php';
                      alt="GCash QR" style="max-width:140px;border-radius:8px;display:block;margin:8px 0">
               <?php endif; ?>
               <label style="display:block;font-weight:600;margin-bottom:4px">Upload Payment Screenshot *</label>
-              <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif">
+              <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif" id="gcashReceiptFile" required>
               <div style="color:#888;font-size:.75rem;margin-top:3px">JPEG, PNG or GIF — max 5 MB</div>
             </div>
           </div>
@@ -259,6 +269,24 @@ function selectPayment(method) {
     btn.style.background = '';
   }
 }
+// Prevent form submit if GCash selected but no file uploaded
+document.getElementById('payForm').addEventListener('submit', function(e) {
+  var method = document.querySelector('input[name="payment_method"]:checked');
+  if (!method) {
+    e.preventDefault();
+    alert('Please select a payment method.');
+    return;
+  }
+  if (method.value === 'gcash') {
+    var file = document.getElementById('gcashReceiptFile');
+    if (!file || !file.files || file.files.length === 0) {
+      e.preventDefault();
+      alert('Please upload your GCash payment screenshot before confirming.');
+      file.focus();
+      return;
+    }
+  }
+});
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
