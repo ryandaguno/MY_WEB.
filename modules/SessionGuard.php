@@ -12,7 +12,11 @@ class SessionGuard {
     public static function requireClient(): void {
         self::start();
         if (($_SESSION['role'] ?? '') !== 'client') {
-            header('Location: ' . BASE_URL . '/public/auth/login.php');
+            // Save the current URL so we can redirect back after login
+            $returnTo = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')
+                      . '://' . ($_SERVER['HTTP_HOST'] ?? '')
+                      . ($_SERVER['REQUEST_URI'] ?? '');
+            header('Location: ' . BASE_URL . '/public/auth/login.php?return=' . urlencode($returnTo));
             exit;
         }
         self::checkInactivity(SESSION_TIMEOUT_CLIENT, BASE_URL . '/public/auth/login.php');

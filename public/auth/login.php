@@ -9,7 +9,15 @@ if (SessionGuard::isAdminLoggedIn()) {
     header('Location: ' . BASE_URL . '/admin/dashboard.php'); exit;
 }
 if (SessionGuard::isClientLoggedIn()) {
-    header('Location: ' . BASE_URL . '/public/home.php'); exit;
+    $return = $_GET['return'] ?? $_POST['return'] ?? '';
+    $redirect = ($return && strpos($return, BASE_URL) === 0) ? $return : BASE_URL . '/public/home.php';
+    header('Location: ' . $redirect); exit;
+}
+
+$returnUrl = $_GET['return'] ?? '';
+// Validate return URL — must start with our BASE_URL for security
+if ($returnUrl && strpos($returnUrl, BASE_URL) !== 0) {
+    $returnUrl = '';
 }
 
 $error = '';
@@ -18,28 +26,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('Session expired. Please refresh and try again.');
     }
 
-    $login    = trim($_POST['login'] ?? '');    // accepts email OR username
+    $login    = trim($_POST['login'] ?? '');
     $password = $_POST['password'] ?? '';
-    $auth     = new Auth();
+    $returnTo = $_POST['return_url'] ?? '';
+    if ($returnTo && strpos($returnTo, BASE_URL) !== 0) $returnTo = '';
+
+    $auth = new Auth();
 
     if (empty($login) || empty($password)) {
         $error = 'Please enter your username/email and password.';
     } else {
-        // Try admin first (by username)
+        // Try admin first
         $adminResult = $auth->adminLogin($login, $password);
         if ($adminResult['success']) {
             SessionGuard::setAdminSession($adminResult['admin']);
             header('Location: ' . BASE_URL . '/admin/dashboard.php'); exit;
         }
 
-        // Try client (by email)
+        // Try client
         $clientResult = $auth->login($login, $password);
         if ($clientResult['success']) {
             SessionGuard::setClientSession($clientResult['client']);
-            header('Location: ' . BASE_URL . '/public/home.php'); exit;
+            $dest = $returnTo ?: BASE_URL . '/public/home.php';
+            header('Location: ' . $dest); exit;
         }
 
-        // Both failed — show generic error
         $error = 'The username/email or password is incorrect.';
     }
 }
@@ -160,7 +171,8 @@ $successMsg = SessionGuard::getFlash('success');
       <?php endif; ?>
 
       <form method="post" novalidate>
-        <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+        <input type="hidden" name="csrf_token"  value="<?= $csrfToken ?>">
+        <input type="hidden" name="return_url"  value="<?= htmlspecialchars($returnUrl, ENT_QUOTES) ?>">
 
         <div class="mb-3">
           <label class="form-label fw-semibold text-secondary small">USERNAME OR EMAIL</label>
