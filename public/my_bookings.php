@@ -1,9 +1,12 @@
 <?php
-$pageTitle = 'My Bookings';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../modules/SessionGuard.php';
+SessionGuard::start();
 SessionGuard::requireClient();
 require_once __DIR__ . '/../modules/BookingManager.php';
 require_once __DIR__ . '/../config/db.php';
+$pageTitle = 'My Bookings';
+require_once __DIR__ . '/../includes/header.php';
 
 $bm       = new BookingManager();
 $bookings = $bm->getClientBookings($_SESSION['client_id']);

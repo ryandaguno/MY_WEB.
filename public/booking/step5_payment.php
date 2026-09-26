@@ -234,7 +234,7 @@ require_once __DIR__ . '/../../includes/header.php';
           </button>
         </form>
 
-        <a href="<?= BASE_URL ?>/public/booking/step4_details.php" class="s5-back-link">← Back to Details</a>
+        <a href="javascript:history.back()" class="s5-back-link">← Back</a>
       </div>
 
     </div>
