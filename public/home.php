@@ -1702,15 +1702,15 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- REGISTER MODAL -->
 <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-modal="true" role="dialog">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:460px">
-    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden">
-      <div style="background:linear-gradient(135deg,#8B4FC8,#0D9488);padding:20px 32px 16px;text-align:center;color:white;position:relative">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;display:flex;flex-direction:column;max-height:90vh">
+      <div style="background:linear-gradient(135deg,#8B4FC8,#0D9488);padding:20px 32px 16px;text-align:center;color:white;position:relative;flex-shrink:0">
         <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
                 data-bs-dismiss="modal" aria-label="Close"></button>
         <h5 id="registerModalLabel" class="fw-bold mb-0" style="letter-spacing:2px;font-size:1rem">
           · Registration Form ·
         </h5>
       </div>
-      <div style="background:linear-gradient(160deg,#7B3FC0 0%,#0D9488 100%);padding:20px 36px 28px">
+      <div style="background:linear-gradient(160deg,#7B3FC0 0%,#0D9488 100%);padding:20px 36px 28px;overflow-y:auto;flex:1">
         <!-- General error banner -->
         <div id="regGeneralError" style="display:none;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);
              border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#fca5a5;font-size:.82rem;text-align:center"></div>
@@ -1719,9 +1719,10 @@ document.addEventListener('DOMContentLoaded', function () {
           <input type="hidden" name="csrf_token" value="<?= SessionGuard::generateCsrfToken() ?>">
 
           <div class="mb-3">
-            <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Name</label>
+            <label style="color:rgba(255,255,255,.75);font-size:.78rem;margin-bottom:2px">* Username</label>
             <input type="text" name="username" id="reg_username" class="reg-input form-control"
-                   maxlength="50" required autocomplete="name" value="<?= $regName ?>">
+                   maxlength="50" required autocomplete="username" value="<?= $regName ?>"
+                   placeholder="Choose a username">
             <span class="reg-field-error" id="err_username"></span>
           </div>
 
