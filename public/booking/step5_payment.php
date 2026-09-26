@@ -213,7 +213,7 @@ require_once __DIR__ . '/../../includes/header.php';
                    style="max-width:160px;border-radius:8px;display:block;margin:8px 0;border:2px solid #e0e0e0"
                    onerror="this.style.display='none'">
               <label style="display:block;font-weight:600;margin-bottom:4px">Upload Payment Screenshot *</label>
-              <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif" id="gcashReceiptFile" required>
+              <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif" id="gcashReceiptFile">
               <div style="color:#888;font-size:.75rem;margin-top:3px">JPEG, PNG or GIF — max 5 MB</div>
             </div>
           </div>
