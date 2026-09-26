@@ -11,6 +11,9 @@ if (empty($_SESSION['booking']['schedule_id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SessionGuard::validateCsrfToken($_POST['csrf_token'] ?? '')) die('Session expired.');
     $_SESSION['booking']['notes'] = htmlspecialchars(trim($_POST['notes'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $_SESSION['booking']['name']  = htmlspecialchars(trim($_POST['name']  ?? ''), ENT_QUOTES, 'UTF-8');
+    $_SESSION['booking']['phone'] = htmlspecialchars(trim($_POST['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $_SESSION['booking']['email'] = htmlspecialchars(trim($_POST['email'] ?? ''), ENT_QUOTES, 'UTF-8');
     header('Location: ' . BASE_URL . '/public/booking/step5_payment.php'); exit;
 }
 
@@ -40,15 +43,15 @@ require_once __DIR__ . '/../../includes/header.php';
     <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
     <div class="mb-3">
       <label class="form-label fw-semibold">Name</label>
-      <input type="text" class="form-control bg-light" value="<?= htmlspecialchars($client['username']) ?>" readonly>
+      <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($client['username']) ?>">
     </div>
     <div class="mb-3">
       <label class="form-label fw-semibold">Phone Number</label>
-      <input type="text" class="form-control bg-light" value="<?= htmlspecialchars($client['phone']) ?>" readonly>
+      <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($client['phone']) ?>">
     </div>
     <div class="mb-3">
       <label class="form-label fw-semibold">Email</label>
-      <input type="email" class="form-control bg-light" value="<?= htmlspecialchars($client['email']) ?>" readonly>
+      <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($client['email']) ?>">
     </div>
     <div class="mb-3">
       <label class="form-label fw-semibold">Notes / Special Requests <span class="text-muted small">(optional)</span></label>
