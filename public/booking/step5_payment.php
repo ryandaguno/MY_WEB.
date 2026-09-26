@@ -207,35 +207,24 @@ require_once __DIR__ . '/../../includes/header.php';
         <form method="post" enctype="multipart/form-data" id="payForm">
           <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
 
-          <div class="s5-method-card active" id="gcashCard" onclick="selectPayment('gcash')">
-            <div class="s5-method-header">
-              <input type="radio" name="payment_method" value="gcash" id="payGcash" checked>
-              <label for="payGcash" style="cursor:pointer;margin:0"><i class="bi bi-qr-code me-1"></i>Pay with GCash</label>
-            </div>
-            <div class="s5-method-body" id="gcashSection">
-              <div style="background:#e8f5e9;border:1.5px solid #2ecc40;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.82rem;color:#1a6b1a;">
-                <i class="bi bi-info-circle-fill me-1"></i>
-                <strong>How to pay:</strong> Send ₱<?= number_format($downpayment,2) ?> to GCash number <strong><?= GCASH_NUMBER ?></strong>, then take a screenshot of your receipt and upload it below.
-              </div>
-              <p class="mb-1">GCash Number: <strong><?= GCASH_NUMBER ?></strong></p>
-              <img src="<?= BASE_URL ?>/public/gcash_qr.php"
-                   alt="GCash QR Code"
-                   style="max-width:160px;border-radius:8px;display:block;margin:8px 0;border:2px solid #e0e0e0"
-                   onerror="this.style.display='none'">
-              <label style="display:block;font-weight:600;margin-bottom:4px">Upload Payment Screenshot *</label>
-              <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif" id="gcashReceiptFile">
-              <div style="color:#888;font-size:.75rem;margin-top:3px">JPEG, PNG or GIF — max 5 MB</div>
-            </div>
-          </div>
+          <input type="hidden" name="payment_method" value="gcash">
 
-          <div class="s5-method-card" id="paypalCard" onclick="selectPayment('paypal')">
-            <div class="s5-method-header">
-              <input type="radio" name="payment_method" value="paypal" id="payPaypal">
-              <label for="payPaypal" style="cursor:pointer;margin:0"><i class="bi bi-paypal me-1"></i>Pay with PayPal</label>
+          <div style="background:#f0fdf4;border:1.5px solid #2ecc40;border-radius:12px;padding:18px 20px;margin-bottom:16px">
+            <div style="font-weight:800;font-size:.92rem;color:#166534;margin-bottom:12px">
+              <i class="bi bi-qr-code me-2"></i>Pay with GCash
             </div>
-            <div id="paypalSection" style="display:none;margin-top:10px;font-size:.82rem;color:#555;">
-              <i class="bi bi-box-arrow-up-right me-1"></i>You will be redirected to PayPal to complete your downpayment of <strong>₱<?= number_format($downpayment,2) ?></strong>.
+            <div style="background:#e8f5e9;border:1.5px solid #2ecc40;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.82rem;color:#1a6b1a;">
+              <i class="bi bi-info-circle-fill me-1"></i>
+              <strong>How to pay:</strong> Send ₱<?= number_format($downpayment,2) ?> to GCash number <strong><?= GCASH_NUMBER ?></strong>, then take a screenshot of your receipt and upload it below.
             </div>
+            <p class="mb-1">GCash Number: <strong><?= GCASH_NUMBER ?></strong></p>
+            <img src="<?= BASE_URL ?>/public/gcash_qr.php"
+                 alt="GCash QR Code"
+                 style="max-width:160px;border-radius:8px;display:block;margin:8px 0;border:2px solid #e0e0e0"
+                 onerror="this.style.display='none'">
+            <label style="display:block;font-weight:600;margin-bottom:4px">Upload Payment Screenshot *</label>
+            <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif" id="gcashReceiptFile">
+            <div style="color:#888;font-size:.75rem;margin-top:3px">JPEG, PNG or GIF — max 5 MB</div>
           </div>
 
           <button type="submit" class="s5-confirm-btn" id="confirmBtn">
@@ -252,47 +241,13 @@ require_once __DIR__ . '/../../includes/header.php';
 </div>
 
 <script>
-function selectPayment(method) {
-  ['gcash','paypal'].forEach(function(m) {
-    document.getElementById(m + 'Card').classList.toggle('active', m === method);
-  });
-  document.getElementById('payGcash').checked  = (method === 'gcash');
-  document.getElementById('payPaypal').checked = (method === 'paypal');
-  document.getElementById('gcashSection').style.display  = method === 'gcash'  ? 'block' : 'none';
-  document.getElementById('paypalSection').style.display = method === 'paypal' ? 'block' : 'none';
-
-  var btn   = document.getElementById('confirmBtn');
-  var icon  = document.getElementById('confirmIcon');
-  var label = document.getElementById('confirmLabel');
-
-  btn.disabled = false;
-
-  if (method === 'paypal') {
-    icon.className    = 'bi bi-paypal me-1';
-    label.textContent = 'Continue to PayPal';
-    btn.style.background = '#003087';
-  } else {
-    icon.className    = 'bi bi-check-circle me-1';
-    label.textContent = 'Confirm Booking';
-    btn.style.background = '';
-  }
-}
-// Prevent form submit if GCash selected but no file uploaded
+// Prevent form submit if no file uploaded
 document.getElementById('payForm').addEventListener('submit', function(e) {
-  var method = document.querySelector('input[name="payment_method"]:checked');
-  if (!method) {
+  var file = document.getElementById('gcashReceiptFile');
+  if (!file || !file.files || file.files.length === 0) {
     e.preventDefault();
-    alert('Please select a payment method.');
-    return;
-  }
-  if (method.value === 'gcash') {
-    var file = document.getElementById('gcashReceiptFile');
-    if (!file || !file.files || file.files.length === 0) {
-      e.preventDefault();
-      alert('Please upload your GCash payment screenshot before confirming.');
-      file.focus();
-      return;
-    }
+    alert('Please upload your GCash payment screenshot before confirming.');
+    file.focus();
   }
 });
 </script>
