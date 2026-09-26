@@ -200,11 +200,10 @@ require_once __DIR__ . '/../../includes/header.php';
               <p class="mb-1">GCash Number: <strong><?= GCASH_NUMBER ?></strong></p>
               <?php
               $qrPath = __DIR__ . '/../../assets/images/gcash_qr.png';
-              $qrSrc  = file_exists($qrPath)
-                ? BASE_URL . '/assets/images/gcash_qr.png'
-                : 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' . urlencode(GCASH_NUMBER) . '&bgcolor=ffffff&color=005f2f&margin=10';
-              ?>
-              <img src="<?= $qrSrc ?>" alt="GCash QR" style="max-width:140px;border-radius:8px;display:block;margin:8px 0">
+              if (file_exists($qrPath)): ?>
+                <img src="<?= BASE_URL ?>/assets/images/gcash_qr.png"
+                     alt="GCash QR" style="max-width:140px;border-radius:8px;display:block;margin:8px 0">
+              <?php endif; ?>
               <label style="display:block;font-weight:600;margin-bottom:4px">Upload Payment Screenshot *</label>
               <input type="file" name="receipt" class="s5-file" accept="image/jpeg,image/png,image/gif">
               <div style="color:#888;font-size:.75rem;margin-top:3px">JPEG, PNG or GIF — max 5 MB</div>
