@@ -146,7 +146,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
       <?php if (!empty(GCASH_QR_PATH)): ?>
       <div style="text-align:center;margin-bottom:16px">
-        <img src="<?= BASE_URL ?>/assets/images/gcash_qr.png"
+        <img src="<?= BASE_URL ?>/public/gcash_qr.php"
              alt="GCash QR Code"
              style="max-width:180px;border-radius:10px;border:2px solid #e0e0e0"
              onerror="this.style.display='none'">

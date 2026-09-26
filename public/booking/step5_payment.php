@@ -208,7 +208,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 <strong>How to pay:</strong> Send ₱<?= number_format($downpayment,2) ?> to GCash number <strong><?= GCASH_NUMBER ?></strong>, then take a screenshot of your receipt and upload it below.
               </div>
               <p class="mb-1">GCash Number: <strong><?= GCASH_NUMBER ?></strong></p>
-              <img src="<?= BASE_URL ?>/assets/images/gcash_qr.png"
+              <img src="<?= BASE_URL ?>/public/gcash_qr.php"
                    alt="GCash QR Code"
                    style="max-width:160px;border-radius:8px;display:block;margin:8px 0;border:2px solid #e0e0e0"
                    onerror="this.style.display='none'">
